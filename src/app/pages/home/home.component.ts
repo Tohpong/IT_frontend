@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 
 interface NewsItem {
@@ -17,9 +17,23 @@ interface NewsItem {
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   welcomeMessage: string = 'ระบบติดตามและนัดหมายเทรนเนอร์';
-  
+
+  // ✅ เพิ่มชุดภาพสำหรับ Hero Section
+  heroImages: string[] = [
+    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1000&q=80',
+    'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1000&q=80',
+    'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&w=1000&q=80'
+  ];
+
+  // ✅ ตัวแปรสำหรับควบคุมภาพ
+  index: number = 0;
+  currentImage: string = this.heroImages[0];
+  fadeIn: boolean = true;
+  private slideshowInterval: any;
+
+  // ✅ ข่าว (เหมือนเดิม)
   newsItems: NewsItem[] = [
     {
       id: 1,
@@ -34,24 +48,73 @@ export class HomeComponent implements OnInit {
       id: 2,
       title: 'คอร์สออนไลน์',
       description: 'คอร์สเรียนออนไลน์สำหรับผู้เริ่มต้น',
-      image: 'https://images.unsplash.com/photo-1616279969856-759f316a5ac1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+      image: 'https://images.unsplash.com/photo-1616279969856-759f316a5ac1?auto=format&fit=crop&w=1000&q=80',
       category: 'คอร์สออนไลน์',
       routerLink: '/course',
       isExternal: false
     }
   ];
 
-  constructor(private router: Router) { }
+  constructor(private router: Router) {}
 
   ngOnInit(): void {
+    this.startSlideshow();
   }
 
+  ngOnDestroy(): void {
+    this.stopSlideshow();
+  }
+
+  // ✅ สไลด์อัตโนมัติ
+  startSlideshow(): void {
+    this.slideshowInterval = setInterval(() => {
+      this.nextImage();
+    }, 4000);
+  }
+
+  stopSlideshow(): void {
+    if (this.slideshowInterval) {
+      clearInterval(this.slideshowInterval);
+    }
+  }
+
+  // ✅ เปลี่ยนภาพไปข้างหน้า
+  nextImage(): void {
+    this.fadeIn = false;
+    setTimeout(() => {
+      this.index = (this.index + 1) % this.heroImages.length;
+      this.currentImage = this.heroImages[this.index];
+      this.fadeIn = true;
+    }, 300);
+  }
+
+  // ✅ ย้อนกลับภาพก่อนหน้า
+  prevImage(): void {
+    this.fadeIn = false;
+    setTimeout(() => {
+      this.index = (this.index - 1 + this.heroImages.length) % this.heroImages.length;
+      this.currentImage = this.heroImages[this.index];
+      this.fadeIn = true;
+    }, 300);
+  }
+
+  // ✅ เลือกภาพด้วยจุดวงกลม
+  goToImage(i: number): void {
+    this.stopSlideshow();
+    this.fadeIn = false;
+    setTimeout(() => {
+      this.index = i;
+      this.currentImage = this.heroImages[this.index];
+      this.fadeIn = true;
+      this.startSlideshow();
+    }, 300);
+  }
+
+  // ✅ คลิกข่าว
   onNewsClick(news: NewsItem): void {
     if (news.isExternal && news.link) {
-      // เปิดลิงก์ภายนอกในแท็บใหม่
       window.open(news.link, '_blank');
     } else if (news.routerLink) {
-      // นำทางไปยังหน้าภายในแอป
       this.router.navigate([news.routerLink]);
     }
   }

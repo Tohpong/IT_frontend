@@ -1,4 +1,4 @@
-/* Global Variables */
+/* 🌈 Global Variables */
 :root {
   --primary-color: #09090b;
   --secondary-color: #ef4444;
@@ -30,13 +30,14 @@
   padding: 0 var(--spacing-md);
 }
 
-/* Navigation */
-
-/* Hero Section */
+/* ============================== */
+/* 🌟 HERO SECTION (พร้อมสไลด์)  */
+/* ============================== */
 .hero-section {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   padding: var(--spacing-xl) 0;
   position: relative;
+  overflow: hidden;
 }
 
 .hero-content {
@@ -55,8 +56,22 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: var(--radius-lg);
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+  opacity: 1;
 }
 
+.fade-in {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.fade-out {
+  opacity: 0;
+  transform: scale(1.03);
+}
+
+/* 🔥 Overlay */
 .hero-overlay {
   position: absolute;
   top: 0;
@@ -67,20 +82,77 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2;
 }
 
 .hero-title {
-  color: white;
+  color: #fff;
   font-size: 2.5rem;
   font-weight: 800;
   text-align: center;
-  text-shadow: none;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
   font-family: 'Inter', sans-serif;
   letter-spacing: -0.025em;
   line-height: 1.1;
 }
 
-/* Personal Trainer Section */
+/* 🎯 ปุ่มควบคุมซ้ายขวา */
+.hero-controls {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  transform: translateY(-50%);
+  padding: 0 20px;
+  z-index: 3;
+}
+
+.control-btn {
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: white;
+  font-size: 2rem;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ⚪ จุด Indicator ด้านล่าง */
+.hero-indicators {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 3;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dot.active {
+  background-color: var(--secondary-color);
+  transform: scale(1.3);
+}
+
+/* ============================== */
+/* 🏋️ PERSONAL TRAINER SECTION    */
+/* ============================== */
 .trainer-section {
   padding: var(--spacing-2xl) 0;
   background: var(--bg-white);
@@ -128,7 +200,6 @@
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: var(--spacing-md);
-  color: white;
 }
 
 .trainer-description {
@@ -150,13 +221,15 @@
 }
 
 .trainer-btn:hover {
-  background: var(--secondary-color) !important;
-  color: white !important;
+  background: var(--secondary-color);
+  color: white;
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 0, 0, 0.3);
 }
 
-/* News Section */
+/* ============================== */
+/* 📰 NEWS SECTION                */
+/* ============================== */
 .news-section {
   padding: var(--spacing-2xl) 0;
   background: var(--bg-gray);
@@ -258,40 +331,23 @@
   transform: translateX(5px);
 }
 
-/* Responsive Design */
+/* ============================== */
+/* 📱 RESPONSIVE DESIGN           */
+/* ============================== */
 @media (max-width: 768px) {
-  .top-nav .container {
-    flex-direction: column;
-    gap: var(--spacing-md);
-  }
-  
-  .nav-menu {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .nav-actions {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .search-input {
-    width: 150px;
-  }
-  
   .hero-title {
     font-size: 1.8rem;
   }
-  
+
   .trainer-card {
     grid-template-columns: 1fr;
     text-align: center;
   }
-  
+
   .trainer-img {
     height: 250px;
   }
-  
+
   .news-grid {
     grid-template-columns: 1fr;
   }

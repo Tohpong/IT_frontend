@@ -1,29 +1,22 @@
-/* CSS Variables for Theme */
+/* 🎨 CSS Variables */
 :root {
-  --primary-green: #4CAF50;
-  --primary-orange: #FF9800;
-  --accent-orange: #FF5722;
-  --dark-green: #388E3C;
-  --light-green: #C8E6C9;
+  --primary-red: #dc2626;
   --text-dark: #000000;
-  --text-light: #666;
-  --text-muted: #999;
+  --text-light: #fff;
   --bg-white: #ffffff;
-  --bg-light: #ffffff;
-  --border-light: #E0E0E0;
-  --shadow-light: rgba(0, 0, 0, 0.08);
-  --shadow-medium: rgba(0, 0, 0, 0.12);
-  --shadow-heavy: rgba(0, 0, 0, 0.16);
-  --success-color: #4CAF50;
-  --warning-color: #FF9800;
+  --border-light: #e5e5e5;
+  --shadow-light: rgba(0, 0, 0, 0.1);
+  --shadow-medium: rgba(0, 0, 0, 0.2);
 }
 
+/* Page Wrapper */
 .white-page-wrapper {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--bg-white) 0%, var(--bg-light) 100%);
+  background: var(--bg-white);
   padding: 0;
 }
 
+/* Services Section */
 .services-section {
   padding: 80px 0;
   background: var(--bg-white);
@@ -45,16 +38,11 @@
   font-size: 2.5rem;
   font-weight: 700;
   color: var(--text-dark);
-  margin-bottom: 16px;
-  background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .section-subtitle {
   font-size: 1.1rem;
-  color: var(--text-light);
+  color: var(--text-dark);
   max-width: 600px;
   margin: 0 auto 40px;
   line-height: 1.6;
@@ -66,17 +54,18 @@
 }
 
 .summary-card {
-  background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-  color: white;
+  background: var(--bg-white);
+  color: var(--text-dark);
   padding: 20px 30px;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 8px 24px var(--shadow-light);
   max-width: 500px;
   margin: 0 auto;
+  border: 2px solid var(--primary-red);
 }
 
 .summary-text {
@@ -85,20 +74,18 @@
 }
 
 .btn-view-selected {
-  background: rgba(255, 255, 255, 0.2);
-  color: rgb(255, 255, 255);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: var(--primary-red);
+  color: var(--text-light);
+  border: none;
   padding: 10px 20px;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
 }
 
 .btn-view-selected:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: #a82222;
   transform: translateY(-2px);
 }
 
@@ -107,7 +94,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 30px;
-  margin-bottom: 80px;
 }
 
 /* Service Card */
@@ -117,27 +103,19 @@
   overflow: hidden;
   box-shadow: 0 8px 32px var(--shadow-light);
   transition: all 0.3s ease;
-  border: 2px solid transparent;
-  position: relative;
+  border: 2px solid var(--primary-red);
   display: flex;
   flex-direction: column;
   min-height: 450px;
 }
 
 .service-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px var(--shadow-medium);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 36px var(--shadow-medium);
 }
 
 .service-card.selected {
-  border-color: var(--primary-green);
-  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
-  box-shadow: 0 12px 36px rgba(76, 175, 80, 0.2);
-  backdrop-filter: blur(10px);
-}
-
-.service-card.popular {
-  position: relative;
+  border-color: var(--primary-red);
 }
 
 /* Badges */
@@ -150,19 +128,13 @@
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: white;
+  color: var(--text-light);
+  background: var(--primary-red);
+  box-shadow: 0 4px 12px var(--shadow-light);
   z-index: 2;
-  backdrop-filter: blur(10px);
-}
-
-.popular-badge {
-  background: linear-gradient(135deg, var(--primary-orange), var(--accent-orange));
-  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
 }
 
 .selected-badge {
-  background: linear-gradient(135deg, var(--success-color), var(--dark-green));
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
   top: 50px;
 }
 
@@ -170,7 +142,6 @@
 .service-icon {
   text-align: center;
   padding: 40px 20px 20px;
-  background: var(--bg-white);
 }
 
 .icon {
@@ -180,7 +151,7 @@
   background: var(--bg-white);
   border-radius: 50%;
   box-shadow: 0 8px 24px var(--shadow-light);
-  border: 3px solid rgba(76, 175, 80, 0.1);
+  border: 3px solid var(--primary-red);
 }
 
 /* Service Content */
@@ -200,7 +171,7 @@
 }
 
 .service-description {
-  color: var(--text-light);
+  color: var(--text-dark);
   line-height: 1.6;
   margin-bottom: 20px;
   text-align: center;
@@ -218,67 +189,15 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--text-muted);
+  color: var(--text-dark);
   font-size: 0.9rem;
   padding: 8px 16px;
-  background: var(--bg-light);
   border-radius: 20px;
+  border: 1px solid var(--primary-red);
 }
 
 .meta-item svg {
-  color: var(--primary-green);
-}
-
-/* Service Features */
-.service-features {
-  flex: 1;
-  margin-bottom: 24px;
-}
-
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  color: var(--text-light);
-  font-size: 0.9rem;
-}
-
-.feature-item svg {
-  color: var(--primary-green);
-  flex-shrink: 0;
-}
-
-/* Service Footer */
-.service-footer {
-  padding: 20px 24px;
-  border-top: 1px solid var(--border-light);
-  background: var(--bg-white);
-}
-
-.service-price {
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.price-label {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-bottom: 4px;
-}
-
-.price-amount {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--primary-green);
-  line-height: 1;
-}
-
-.price-unit {
-  font-size: 0.9rem;
-  color: var(--text-light);
-  margin-left: 4px;
+  color: var(--primary-red);
 }
 
 /* Buttons */
@@ -299,33 +218,29 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-  color: white;
-  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+  background: var(--primary-red);
+  color: var(--text-light);
+  box-shadow: 0 6px 20px var(--shadow-light);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--dark-green), var(--primary-green));
+  background: #a82222;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(76, 175, 80, 0.4);
-}
-
-.btn-primary.selected {
-  background: linear-gradient(135deg, var(--success-color), var(--dark-green));
+  box-shadow: 0 10px 28px var(--shadow-medium);
 }
 
 .btn-secondary {
-  background: transparent;
-  color: var(--text-light);
-  border: 2px solid var(--border-light);
+  background: var(--bg-white);
+  color: var(--text-dark);
+  border: 2px solid var(--primary-red);
 }
 
 .btn-secondary:hover {
-  background: var(--border-light);
-  color: var(--text-dark);
+  background: var(--primary-red);
+  color: var(--text-light);
 }
 
-/* Booking Modal */
+/* 🧾 Booking Modal (รวมโค้ดใหม่ทั้งหมด) */
 .booking-modal {
   position: fixed;
   top: 0;
@@ -339,45 +254,48 @@
   padding: 20px;
 }
 
+/* ✅ แก้ตรงนี้: พื้นหลังทึบ ไม่โปร่งอีกต่อไป */
 .modal-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.85); /* ทึบกว่าเดิม */
+  backdrop-filter: none; /* ปิด blur ที่ทำให้ดูโปร่ง */
 }
 
+/* ✅ การ์ดใน modal เป็นสีขาวชัดเจน */
 .modal-content {
-  background: var(--bg-white);
+  position: relative;
+  background: #ffffff;
   border-radius: 20px;
   max-width: 500px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  position: relative;
-  box-shadow: 0 20px 60px var(--shadow-heavy);
-  animation: modalSlideIn 0.3s ease-out;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  padding: 30px;
+  color: #000000;
+  z-index: 2;
 }
 
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+/* เพิ่มพื้นหลังขาวให้เนื้อหาแต่ละส่วนใน modal */
+.service-info,
+.booking-form {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Modal Header */
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px;
-  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 8px;
 }
 
 .modal-header h3 {
@@ -394,256 +312,56 @@
   padding: 8px;
   border-radius: 50%;
   transition: background 0.3s ease;
-  color: var(--text-muted);
+  color: var(--text-dark);
 }
 
 .close-btn:hover {
-  background: var(--bg-light);
-  color: var(--text-dark);
-}
-
-.modal-body {
-  padding: 24px;
-}
-
-.service-info {
-  text-align: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.service-icon-large {
-  font-size: 4rem;
-  margin-bottom: 16px;
-}
-
-.service-info h4 {
-  color: var(--text-dark);
-  font-size: 1.4rem;
-  margin-bottom: 12px;
-}
-
-.service-info p {
+  background: var(--primary-red);
   color: var(--text-light);
-  margin-bottom: 20px;
-  line-height: 1.6;
 }
 
-.service-details {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.detail-item {
-  background: var(--bg-light);
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
-
-.booking-form h5 {
-  color: var(--text-dark);
-  margin-bottom: 20px;
-  font-size: 1.1rem;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  font-weight: 600;
-  color: var(--text-dark);
-  margin-bottom: 8px;
-  font-size: 0.9rem;
-}
-
-.form-control {
+/* Input, Select, Textarea */
+.booking-form input,
+.booking-form select,
+.booking-form textarea {
   width: 100%;
-  padding: 12px 16px;
-  border: 2px solid var(--border-light);
+  padding: 10px 12px;
+  border: 2px solid var(--primary-red);
   border-radius: 8px;
-  font-size: 0.9rem;
-  transition: border-color 0.3s ease;
   background: var(--bg-white);
   color: var(--text-dark);
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: var(--primary-green);
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-}
-
-.form-control textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.modal-footer {
-  padding: 20px 24px;
-  border-top: 1px solid var(--border-light);
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
-.modal-footer .btn {
-  width: auto;
-  min-width: 120px;
-}
-
-/* Service Steps */
-.service-process {
-  background: var(--bg-white);
-  padding: 60px 40px;
-  border-radius: 24px;
-  box-shadow: 0 8px 32px var(--shadow-light);
-  margin-bottom: 60px;
-  border: 1px solid var(--border-light);
-}
-
-.process-title {
-  text-align: center;
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-dark);
-  margin-bottom: 40px;
-  background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.process-steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 30px;
-}
-
-.step-item {
-  text-align: center;
-  padding: 30px 20px;
-  position: relative;
-}
-
-.step-number {
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.4rem;
-  margin: 0 auto 20px;
-  box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
-}
-
-.step-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--text-dark);
-  margin-bottom: 12px;
-}
-
-.step-description {
-  color: var(--text-light);
-  line-height: 1.6;
   font-size: 0.95rem;
 }
 
-/* FAQ Section */
-.faq-section {
-  background: var(--bg-white);
-  padding: 60px 40px;
-  border-radius: 24px;
-  box-shadow: 0 8px 32px var(--shadow-light);
-  border: 1px solid var(--border-light);
+.booking-form input:focus,
+.booking-form select:focus,
+.booking-form textarea:focus {
+  outline: none;
+  border-color: #a82222;
 }
 
-.faq-title {
-  text-align: center;
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-dark);
-  margin-bottom: 40px;
-  background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.faq-list {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.faq-item {
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  margin-bottom: 16px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.faq-item:hover {
-  box-shadow: 0 4px 16px var(--shadow-light);
-}
-
-.faq-question {
-  width: 100%;
-  padding: 20px 24px;
-  background: var(--bg-light);
-  border: none;
-  text-align: left;
-  cursor: pointer;
+/* Label */
+.booking-form label {
+  display: block;
   font-weight: 600;
+  margin-bottom: 6px;
   color: var(--text-dark);
+}
+
+/* Buttons */
+.modal-footer {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  transition: all 0.3s ease;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.faq-question:hover,
-.faq-question.active {
-  background: var(--primary-green);
-  color: white;
+.modal-footer .btn {
+  margin-top: 8px;
+  flex: 1;
 }
 
-.faq-question svg {
-  transition: transform 0.3s ease;
-}
-
-.faq-question svg.rotated {
-  transform: rotate(180deg);
-}
-
-.faq-answer {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-  background: var(--bg-white);
-}
-
-.faq-answer.active {
-  max-height: 200px;
-}
-
-.faq-answer p {
-  padding: 20px 24px;
-  margin: 0;
-  color: var(--text-light);
-  line-height: 1.6;
-}
-
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 768px) {
   .services-grid {
     grid-template-columns: 1fr;
@@ -653,42 +371,17 @@
   .service-card {
     margin: 0 10px;
   }
-  
-  .section-title {
-    font-size: 2rem;
-  }
-  
-  .summary-card {
-    flex-direction: column;
-    text-align: center;
-    gap: 16px;
-  }
-  
-  .service-details {
-    grid-template-columns: 1fr;
-  }
-  
+
   .modal-content {
     margin: 10px;
   }
-  
+
   .modal-footer {
     flex-direction: column;
   }
-  
+
   .modal-footer .btn {
     width: 100%;
-  }
-  
-  .process-steps {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
-  .service-process,
-  .faq-section {
-    padding: 40px 20px;
-    margin: 0 10px 40px;
   }
 }
 
@@ -696,23 +389,19 @@
   .container {
     padding: 0 15px;
   }
-  
-  .services-section {
-    padding: 60px 0;
-  }
-  
+
   .section-title {
     font-size: 1.8rem;
   }
-  
+
   .service-content {
     padding: 20px;
   }
-  
+
   .service-icon {
     padding: 30px 20px 20px;
   }
-  
+
   .icon {
     font-size: 2.5rem;
     padding: 16px;

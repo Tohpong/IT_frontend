@@ -3,21 +3,50 @@
   <div class="container">
     <div class="hero-content">
       <div class="hero-image">
-        <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Fitness Equipment" class="hero-bg" />
+        <img
+          [src]="currentImage"
+          alt="Fitness Equipment"
+          class="hero-bg"
+          [class.fade-in]="fadeIn"
+          [class.fade-out]="!fadeIn"
+        />
+
+        <!-- Overlay -->
         <div class="hero-overlay">
-          <h1 class="hero-title">ระบบติดตามและนัดหมายเทรนเนอร์</h1>
+          <h1 class="hero-title">{{ welcomeMessage }}</h1>
+
+          <!-- ✅ ปุ่มควบคุมซ้ายขวา -->
+          <div class="hero-controls">
+            <button class="control-btn prev" (click)="prevImage()">❮</button>
+            <button class="control-btn next" (click)="nextImage()">❯</button>
+          </div>
+
+          <!-- ✅ จุดแสดงสถานะภาพ (Indicator) -->
+          <div class="hero-indicators">
+            <span
+              *ngFor="let img of heroImages; let i = index"
+              class="dot"
+              [class.active]="i === index"
+              (click)="goToImage(i)"
+            ></span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
+
 <!-- Personal Trainer Section -->
 <section class="trainer-section">
   <div class="container">
     <div class="trainer-card">
       <div class="trainer-image">
-        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Personal Trainer" class="trainer-img" />
+        <img
+          src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1000&q=80"
+          alt="Personal Trainer"
+          class="trainer-img"
+        />
       </div>
       <div class="trainer-info">
         <div class="trainer-badge">เทรนเนอร์ส่วนตัว</div>

@@ -60,7 +60,6 @@ export class ServiceComponent implements OnInit {
         ],
         price: '299',
         duration: '1 ชั่วโมง',
-        popular: true
       },
       {
         id: 2,
@@ -103,7 +102,6 @@ export class ServiceComponent implements OnInit {
         ],
         price: '599',
         duration: '30 วัน',
-        popular: true
       },
       {
         id: 5,
