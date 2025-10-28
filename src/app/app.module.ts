@@ -1,9 +1,11 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { AppComponent } from './app.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http'; // ✅ ตรงนี้สำคัญ
 import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
 
+// ✅ import component ทั้งหมด
 import { HomeComponent } from './pages/home/home.component';
 import { CourseComponent } from './pages/course/course.component';
 import { CourseEnrollmentComponent } from './pages/course-enrollment/course-enrollment.component';
@@ -17,8 +19,6 @@ import { ProfileComponent } from './pages/profile/profile.component';
 import { WorkoutHistoryComponent } from './pages/workout-history/workout-history.component';
 import { RegistrationHistoryComponent } from './pages/registration-history/registration-history.component';
 import { NavbarComponent } from './shared/navbar/navbar.component';
-
-
 
 @NgModule({
   declarations: [
@@ -35,15 +35,17 @@ import { NavbarComponent } from './shared/navbar/navbar.component';
     ProfileComponent,
     WorkoutHistoryComponent,
     RegistrationHistoryComponent,
-    NavbarComponent,
+    NavbarComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
     ReactiveFormsModule,
-    AppRoutingModule
+    AppRoutingModule,
+    HttpClientModule   // ✅ ต้องใส่ใน imports
   ],
   providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+    

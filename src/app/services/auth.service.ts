@@ -1,15 +1,21 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { map, catchError, tap } from 'rxjs/operators';
 
+
+// ----------------------
+// ✅ Interfaces เดิมทั้งหมด
+// ----------------------
 export interface User {
   id: number;
   username: string;
-  email: string;
-  fullName: string;
+  email?: string;
+  fullName?: string;
   phone?: string;
   dateOfBirth?: Date;
   gender?: string;
-  registrationDate: Date;
+  registrationDate?: Date;
   profileImage?: string;
 }
 
@@ -37,6 +43,11 @@ export interface RegistrationHistory {
   paymentMethod?: string;
 }
 
+// ----------------------
+// ✅ AuthService เริ่มต้น
+// ----------------------
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -44,6 +55,9 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
+  private apiUrl = 'http://localhost:8000/account'; // 🔗 ชี้ไปยัง Backend จริง
+
+  // ✅ mock data เดิม (เผื่อใช้กับระบบภายใน)
   private users: User[] = [
     {
       id: 1,
@@ -58,70 +72,80 @@ export class AuthService {
   private workoutSessions: WorkoutSession[] = [];
   private registrationHistories: RegistrationHistory[] = [];
 
-  constructor() {
-    // Check if user is already logged in
+  constructor(private http: HttpClient) {
+    // โหลดข้อมูล user ปัจจุบันจาก localStorage (หากเคย login แล้ว)
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       this.currentUserSubject.next(JSON.parse(savedUser));
     }
   }
 
+  // ----------------------
+  // 🔹 Login (เชื่อม backend จริง)
+  // ----------------------
   login(username: string, password: string): Observable<boolean> {
-    return new Observable(observer => {
-      // Simulate API call
-      setTimeout(() => {
-        const user = this.users.find(u => u.username === username);
-        if (user && password === 'password') { // Simple password check for demo
+    return this.http.post<any>(`${this.apiUrl}/login`, { username, password }).pipe(
+      tap(response => {
+        if (response.success && response.user) {
+          const user: User = {
+            id: response.user.account_id,
+            username: response.user.username,
+            profileImage: response.user.account_pic
+          };
           this.currentUserSubject.next(user);
           localStorage.setItem('currentUser', JSON.stringify(user));
-          observer.next(true);
-        } else {
-          observer.next(false);
         }
-        observer.complete();
-      }, 1000);
-    });
+      }),
+      map(response => response.success === true),
+      catchError(err => {
+        console.error('Login error:', err);
+        return of(false);
+      })
+    );
   }
 
+  // ----------------------
+  // 🔹 Register (สร้างบัญชีจริงใน MySQL)
+  // ----------------------
   register(userData: Partial<User>, password: string): Observable<boolean> {
-    return new Observable(observer => {
-      setTimeout(() => {
-        const existingUser = this.users.find(u => u.username === userData.username || u.email === userData.email);
-        if (existingUser) {
-          observer.next(false);
-        } else {
-          const newUser: User = {
-            id: this.users.length + 1,
-            username: userData.username!,
-            email: userData.email!,
-            fullName: userData.fullName!,
-            phone: userData.phone,
-            dateOfBirth: userData.dateOfBirth,
-            gender: userData.gender,
-            registrationDate: new Date(),
-            profileImage: userData.profileImage
-          };
-          this.users.push(newUser);
-          observer.next(true);
-        }
-        observer.complete();
-      }, 1000);
-    });
+    return this.http.post<any>(`${this.apiUrl}`, {
+      account_pic: userData.profileImage ?? null,
+      username: userData.username,
+      password: password
+    }).pipe(
+      map(res => !!res.account_id),
+      catchError(err => {
+        console.error('Register error:', err);
+        return of(false);
+      })
+    );
   }
 
+  // ----------------------
+  // 🔹 Logout
+  // ----------------------
   logout(): void {
     this.currentUserSubject.next(null);
     localStorage.removeItem('currentUser');
   }
 
-  getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
-  }
-
+  // ----------------------
+  // 🔹 ตรวจสอบสถานะ Login
+  // ----------------------
   isLoggedIn(): boolean {
     return this.currentUserSubject.value !== null;
   }
 
+  // ----------------------
+  // 🔹 ดึงข้อมูลผู้ใช้ปัจจุบัน
+  // ----------------------
+  getCurrentUser(): User | null {
+    return this.currentUserSubject.value;
+  }
+
+  // ----------------------
+  // 🔹 อัปเดตข้อมูลผู้ใช้ (mock)
+  // ----------------------
   updateProfile(userData: Partial<User>): Observable<boolean> {
     return new Observable(observer => {
       setTimeout(() => {
@@ -145,53 +169,38 @@ export class AuthService {
     });
   }
 
-  // Workout tracking methods
+  // ----------------------
+  // 🔹 Workout / Registration (mock)
+  // ----------------------
   addWorkoutSession(session: Omit<WorkoutSession, 'id'>): Observable<boolean> {
     return new Observable(observer => {
-      setTimeout(() => {
-        const newSession: WorkoutSession = {
-          ...session,
-          id: this.workoutSessions.length + 1
-        };
-        this.workoutSessions.push(newSession);
-        observer.next(true);
-        observer.complete();
-      }, 500);
+      const newSession: WorkoutSession = {
+        ...session,
+        id: this.workoutSessions.length + 1
+      };
+      this.workoutSessions.push(newSession);
+      observer.next(true);
+      observer.complete();
     });
   }
 
   getWorkoutSessions(userId: number): Observable<WorkoutSession[]> {
-    return new Observable(observer => {
-      setTimeout(() => {
-        const userSessions = this.workoutSessions.filter(s => s.userId === userId);
-        observer.next(userSessions);
-        observer.complete();
-      }, 300);
-    });
+    return of(this.workoutSessions.filter(s => s.userId === userId));
   }
 
-  // Registration history methods
   addRegistration(registration: Omit<RegistrationHistory, 'id'>): Observable<boolean> {
     return new Observable(observer => {
-      setTimeout(() => {
-        const newRegistration: RegistrationHistory = {
-          ...registration,
-          id: this.registrationHistories.length + 1
-        };
-        this.registrationHistories.push(newRegistration);
-        observer.next(true);
-        observer.complete();
-      }, 500);
+      const newRegistration: RegistrationHistory = {
+        ...registration,
+        id: this.registrationHistories.length + 1
+      };
+      this.registrationHistories.push(newRegistration);
+      observer.next(true);
+      observer.complete();
     });
   }
 
   getRegistrationHistory(userId: number): Observable<RegistrationHistory[]> {
-    return new Observable(observer => {
-      setTimeout(() => {
-        const userRegistrations = this.registrationHistories.filter(r => r.userId === userId);
-        observer.next(userRegistrations);
-        observer.complete();
-      }, 300);
-    });
+    return of(this.registrationHistories.filter(r => r.userId === userId));
   }
 }
