@@ -1,15 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 interface Course {
-  id: number;
-  title: string;
+  course_id: number;
+  course_name: string;
   description: string;
   duration: string;
-  image: string;
+  img_url: string;
   price: number;
   level: string;
-  tags: string[];
+  tags: string;
+  account_id: number;
+  trainer_name?: string; // เพิ่มจากการ JOIN กับ Account
 }
 
 interface Benefit {
@@ -24,72 +27,10 @@ interface Benefit {
   styleUrls: ['./course.component.css']
 })
 export class CourseComponent implements OnInit {
-  courses: Course[] = [
-    { 
-      id: 1, 
-      title: 'Basic Fitness Training', 
-      description: 'เริ่มต้นการออกกำลังกายอย่างถูกต้อง สร้างพื้นฐานที่แข็งแรงให้กับร่างกาย', 
-      duration: '45 นาที',
-      image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      price: 1500,
-      level: 'เริ่มต้น',
-      tags: ['ฟิตเนส', 'เริ่มต้น', 'พื้นฐาน']
-    },
-    { 
-      id: 2, 
-      title: 'Cardio Workout', 
-      description: 'เผาผลาญไขมันและเพิ่มความแข็งแรงของหัวใจด้วยการออกกำลังกายแบบแอโรบิก', 
-      duration: '30 นาที',
-      image: 'https://images.unsplash.com/photo-1538805060514-97d9cc17730c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      price: 1200,
-      level: 'กลาง',
-      tags: ['คาร์ดิโอ', 'เผาไขมัน', 'หัวใจ']
-    },
-    { 
-      id: 3, 
-      title: 'Strength Training', 
-      description: 'สร้างกล้ามเนื้อและเพิ่มความแข็งแรงด้วยเทคนิคการยกน้ำหนักที่ถูกต้อง', 
-      duration: '60 นาที',
-      image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      price: 2000,
-      level: 'สูง',
-      tags: ['กล้ามเนื้อ', 'น้ำหนัก', 'ความแข็งแรง']
-    },
-    {
-      id: 4,
-      title: 'Yoga & Flexibility',
-      description: 'เพิ่มความยืดหยุ่นและความสมดุลของร่างกายด้วยท่าโยคะ',
-      duration: '50 นาที',
-      image: 'https://gymbeam.sk/blog/wp-content/uploads/2023/05/iStock-1455669523-1124x660.jpg',
-      price: 1300,
-      level: 'เริ่มต้น',
-      tags: ['โยคะ', 'ยืดหยุ่น', 'สมดุล']
-    },
-    {
-      id: 5,
-      title: 'HIIT Training',
-      description: 'การออกกำลังกายแบบ High Intensity สำหรับการเผาผลาญไขมันสูงสุด',
-      duration: '25 นาที',
-      image: 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      price: 1800,
-      level: 'สูง',
-      tags: ['HIIT', 'เข้มข้น', 'เผาไขมัน']
-    },
-    {
-      id: 6,
-      title: 'Functional Training',
-      description: 'พัฒนาความแข็งแรงและการเคลื่อนไหวที่ใช้ในชีวิตประจำวัน',
-      duration: '55 นาที',
-      image: 'https://cdn.centr.com/content/26000/25412/images/landscapewidedesktop1x-ec41255412947b51796bd952c5bafe04-ic-what-is-functional-training-inline-6-169-16922.jpg',
-      price: 1700,
-      level: 'กลาง',
-      tags: ['ฟังก์ชั่น', 'ชีวิตประจำวัน', 'การเคลื่อนไหว']
-    }
-  ];
-
+  courses: Course[] = [];
   courseBenefits: Benefit[] = [
     {
-      icon: '�',
+      icon: '💪',
       title: 'เทรนเนอร์มืออาชีพ',
       description: 'ฝึกกับเทรนเนอร์ที่ได้รับการรับรองและมีประสบการณ์สูง'
     },
@@ -99,14 +40,14 @@ export class CourseComponent implements OnInit {
       description: 'อุปกรณ์ออกกำลังกายทันสมัยและหลากหลาย'
     },
     {
-      icon: '�',
+      icon: '📈',
       title: 'ติดตามผลลัพธ์',
       description: 'วัดผลและติดตามความก้าวหน้าของร่างกายอย่างชัดเจน'
     },
     {
       icon: '🏆',
       title: 'โปรแกรมส่วนตัว',
-      description: 'โปรแกรมการออกกำลังกายที่ปรับตามความต้องการ'
+      description: 'โปรแกรมการออกกำลังกายที่ปรับตามความต้องการของคุณ'
     },
     {
       icon: '👥',
@@ -120,16 +61,51 @@ export class CourseComponent implements OnInit {
     }
   ];
 
-  constructor(private router: Router) { }
+  isLoading = false;
+  errorMessage = '';
+
+  private apiUrl = 'http://localhost:8000/course'; // ✅ backend API
+
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
+    this.loadCourses();
   }
 
+  /** ✅ โหลดข้อมูลคอร์สจากฐานข้อมูล */
+  loadCourses(): void {
+    this.isLoading = true;
+    this.http.get<Course[]>(this.apiUrl).subscribe({
+      next: (res) => {
+        this.courses = res.map(c => ({
+          ...c,
+          // fallback สำหรับข้อมูลว่าง
+          img_url: c.img_url || 'https://via.placeholder.com/800x400?text=No+Image',
+          description: c.description || 'ไม่มีคำอธิบายคอร์ส',
+          level: c.level || 'ไม่ระบุ',
+          duration: c.duration || '-',
+          price: c.price || 0
+        }));
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('❌ โหลดข้อมูลคอร์สผิดพลาด:', err);
+        this.errorMessage = 'ไม่สามารถโหลดข้อมูลคอร์สได้';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  /** ✅ ฟังก์ชันนับผู้สมัคร (mock ไว้ก่อน) */
   getEnrollmentCount(courseId: number): number {
     const counts = [120, 85, 150, 95, 110, 75];
-    return counts[courseId - 1] || 50;
+    return counts[(courseId - 1) % counts.length];
   }
 
+  /** ✅ สีระดับความยาก */
   getLevelColor(level: string): string {
     switch (level.toLowerCase()) {
       case 'beginner':
@@ -146,8 +122,9 @@ export class CourseComponent implements OnInit {
     }
   }
 
+  /** ✅ ไปหน้าสมัครคอร์ส */
+  
   enrollCourse(course: Course): void {
-    // ส่งข้อมูลคอร์สไปหน้าสมัครเรียนผ่าน query parameters
     const courseData = encodeURIComponent(JSON.stringify(course));
     this.router.navigate(['/course-enrollment'], { 
       queryParams: { courseData: courseData }

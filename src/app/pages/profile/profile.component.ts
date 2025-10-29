@@ -1,6 +1,6 @@
-
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { AuthService, User } from '../../services/auth.service';
 
 @Component({
@@ -10,6 +10,7 @@ import { AuthService, User } from '../../services/auth.service';
 })
 export class ProfileComponent implements OnInit {
   currentUser: User | null = null;
+  memberData: any = null;   // ✅ ข้อมูลจากตาราง Member
   isEditing = false;
   isLoading = false;
   successMessage = '';
@@ -17,29 +18,49 @@ export class ProfileComponent implements OnInit {
 
   editForm: any = {};
 
+  private apiUrl = 'http://localhost:8000/member'; // ✅ backend API
+
   constructor(
     private authService: AuthService,
+    private http: HttpClient,
     private router: Router
   ) {}
 
   ngOnInit(): void {
+    // ✅ ดึงข้อมูลผู้ใช้ที่ล็อกอินไว้
     this.currentUser = this.authService.getCurrentUser();
     if (!this.currentUser) {
       this.router.navigate(['/login']);
       return;
     }
-    this.resetEditForm();
+
+    // ✅ ใช้ member_id ที่เชื่อมกับบัญชีดึงข้อมูลจาก backend
+    const memberId = this.currentUser['member_id'];
+    if (memberId) {
+      this.http.get(`${this.apiUrl}/${memberId}`).subscribe({
+        next: (res) => {
+          this.memberData = res;
+          this.resetEditForm();
+        },
+        error: (err) => {
+          console.error('โหลดข้อมูลสมาชิกผิดพลาด:', err);
+          this.errorMessage = 'ไม่สามารถโหลดข้อมูลสมาชิกได้';
+        }
+      });
+    } else {
+      this.errorMessage = 'ไม่พบข้อมูลสมาชิกที่เชื่อมกับบัญชีนี้';
+    }
   }
 
   resetEditForm(): void {
-    if (this.currentUser) {
+    if (this.memberData) {
       this.editForm = {
-        fullName: this.currentUser.fullName,
-        email: this.currentUser.email,
-        phone: this.currentUser.phone || '',
-        dateOfBirth: this.currentUser.dateOfBirth ? 
-          new Date(this.currentUser.dateOfBirth).toISOString().split('T')[0] : '',
-        gender: this.currentUser.gender || ''
+        fullName: this.memberData.full_name,
+        phone: this.memberData.phone || '',
+        dateOfBirth: this.memberData.birthdate
+          ? new Date(this.memberData.birthdate).toISOString().split('T')[0]
+          : '',
+        gender: this.memberData.gender || ''
       };
     }
   }
@@ -53,32 +74,48 @@ export class ProfileComponent implements OnInit {
     this.errorMessage = '';
   }
 
+  /** ✅ ฟังก์ชันคำนวณอายุจากวันเกิด */
+  private calcAge(dateString: string): number | null {
+    if (!dateString) return null;
+    const birth = new Date(dateString);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  }
+
   saveProfile(): void {
     this.isLoading = true;
     this.successMessage = '';
     this.errorMessage = '';
 
+    // ✅ เตรียมข้อมูลที่จะส่งไป backend
     const updateData = {
-      fullName: this.editForm.fullName,
-      email: this.editForm.email,
+      full_name: this.editForm.fullName,
       phone: this.editForm.phone,
-      dateOfBirth: this.editForm.dateOfBirth ? new Date(this.editForm.dateOfBirth) : undefined,
-      gender: this.editForm.gender
+      birthdate: this.editForm.dateOfBirth || null, // ส่งเป็น YYYY-MM-DD
+      gender: this.editForm.gender,
+      age: this.calcAge(this.editForm.dateOfBirth) // ✅ คำนวณอายุ
     };
 
-    this.authService.updateProfile(updateData).subscribe({
-      next: (success) => {
+    if (!this.memberData?.member_id) {
+      this.errorMessage = 'ไม่พบรหัสสมาชิก';
+      this.isLoading = false;
+      return;
+    }
+
+    // ✅ อัปเดตข้อมูลในตาราง Member
+    this.http.patch(`${this.apiUrl}/${this.memberData.member_id}`, updateData).subscribe({
+      next: (res) => {
         this.isLoading = false;
-        if (success) {
-          this.currentUser = this.authService.getCurrentUser();
-          this.isEditing = false;
-          this.successMessage = 'บันทึกข้อมูลเรียบร้อยแล้ว';
-          setTimeout(() => this.successMessage = '', 3000);
-        } else {
-          this.errorMessage = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
-        }
+        this.successMessage = 'บันทึกข้อมูลเรียบร้อยแล้ว';
+        this.isEditing = false;
+        this.memberData = res; // อัปเดตข้อมูลล่าสุดในหน้า
+        setTimeout(() => (this.successMessage = ''), 3000);
       },
-      error: () => {
+      error: (err) => {
+        console.error('เกิดข้อผิดพลาดในการบันทึก:', err);
         this.isLoading = false;
         this.errorMessage = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
       }
@@ -98,18 +135,27 @@ export class ProfileComponent implements OnInit {
     this.router.navigate(['/registration-history']);
   }
 
-  formatDate(date: Date | undefined): string {
+  /** ✅ ฟังก์ชันแปลงวันที่ */
+  formatDate(date: string | Date | null | undefined): string {
     if (!date) return 'ไม่ระบุ';
-    return new Date(date).toLocaleDateString('th-TH');
+    try {
+      return new Date(date).toLocaleDateString('th-TH');
+    } catch {
+      return 'ไม่ถูกต้อง';
+    }
   }
 
+  /** ✅ ฟังก์ชันแปลงค่าเพศเป็นข้อความไทย */
   getGenderDisplay(gender: string | undefined): string {
-    switch (gender) {
-      case 'male': return 'ชาย';
-      case 'female': return 'หญิง';
-      case 'other': return 'อื่นๆ';
-      default: return 'ไม่ระบุ';
+    switch (gender?.toLowerCase()) {
+      case 'male':
+        return 'ชาย';
+      case 'female':
+        return 'หญิง';
+      case 'other':
+        return 'อื่นๆ';
+      default:
+        return 'ไม่ระบุ';
     }
   }
 }
- 

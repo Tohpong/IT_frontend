@@ -1,22 +1,22 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { map, catchError, tap } from 'rxjs/operators';
-
+import { map, catchError, tap, switchMap } from 'rxjs/operators';
 
 // ----------------------
-// ✅ Interfaces เดิมทั้งหมด
+// ✅ Interfaces
 // ----------------------
 export interface User {
-  id: number;
+  id: number;               // account_id
   username: string;
   email?: string;
   fullName?: string;
   phone?: string;
-  dateOfBirth?: Date;
+  dateOfBirth?: Date | string | null;
   gender?: string;
   registrationDate?: Date;
   profileImage?: string;
+  member_id?: number;       // ✅ เพิ่มฟิลด์นี้เพื่อเชื่อมกับ Member
 }
 
 export interface WorkoutSession {
@@ -24,7 +24,7 @@ export interface WorkoutSession {
   userId: number;
   date: Date;
   exerciseType: string;
-  duration: number; // in minutes
+  duration: number;
   calories?: number;
   notes?: string;
 }
@@ -44,20 +44,16 @@ export interface RegistrationHistory {
 }
 
 // ----------------------
-// ✅ AuthService เริ่มต้น
+// ✅ AuthService
 // ----------------------
-
-
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
+  private apiUrl = 'http://localhost:8000';
 
-  private apiUrl = 'http://localhost:8000/account'; // 🔗 ชี้ไปยัง Backend จริง
-
-  // ✅ mock data เดิม (เผื่อใช้กับระบบภายใน)
   private users: User[] = [
     {
       id: 1,
@@ -68,12 +64,10 @@ export class AuthService {
       registrationDate: new Date('2024-01-01')
     }
   ];
-
   private workoutSessions: WorkoutSession[] = [];
   private registrationHistories: RegistrationHistory[] = [];
 
   constructor(private http: HttpClient) {
-    // โหลดข้อมูล user ปัจจุบันจาก localStorage (หากเคย login แล้ว)
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       this.currentUserSubject.next(JSON.parse(savedUser));
@@ -81,22 +75,44 @@ export class AuthService {
   }
 
   // ----------------------
-  // 🔹 Login (เชื่อม backend จริง)
+  // 🔹 Login (เรียก backend + ดึง member_id ด้วย)
   // ----------------------
   login(username: string, password: string): Observable<boolean> {
-    return this.http.post<any>(`${this.apiUrl}/login`, { username, password }).pipe(
-      tap(response => {
+    return this.http.post<any>(`${this.apiUrl}/account/login`, { username, password }).pipe(
+      switchMap(response => {
         if (response.success && response.user) {
-          const user: User = {
-            id: response.user.account_id,
-            username: response.user.username,
-            profileImage: response.user.account_pic
-          };
-          this.currentUserSubject.next(user);
-          localStorage.setItem('currentUser', JSON.stringify(user));
+          const accountId = response.user.account_id;
+          // ✅ ดึงข้อมูล member_id ที่เชื่อมกับ account_id
+          return this.http.get<any[]>(`${this.apiUrl}/member`).pipe(
+            map(members => {
+              const member = members.find(m => m.account_id === accountId);
+              const user: User = {
+                id: accountId,
+                username: response.user.username,
+                profileImage: response.user.account_pic,
+                member_id: member ? member.member_id : undefined
+              };
+              this.currentUserSubject.next(user);
+              localStorage.setItem('currentUser', JSON.stringify(user));
+              return true;
+            }),
+            catchError(err => {
+              console.error('Error fetching member:', err);
+              // ยังให้ล็อกอินผ่านแม้ไม่เจอ member_id
+              const user: User = {
+                id: response.user.account_id,
+                username: response.user.username,
+                profileImage: response.user.account_pic
+              };
+              this.currentUserSubject.next(user);
+              localStorage.setItem('currentUser', JSON.stringify(user));
+              return of(true);
+            })
+          );
+        } else {
+          return of(false);
         }
       }),
-      map(response => response.success === true),
       catchError(err => {
         console.error('Login error:', err);
         return of(false);
@@ -105,20 +121,46 @@ export class AuthService {
   }
 
   // ----------------------
-  // 🔹 Register (สร้างบัญชีจริงใน MySQL)
+  // 🔹 Register (ส่งตรงไป backend /account/register)
   // ----------------------
   register(userData: Partial<User>, password: string): Observable<boolean> {
-    return this.http.post<any>(`${this.apiUrl}`, {
-      account_pic: userData.profileImage ?? null,
+    const birthdate = userData.dateOfBirth
+      ? new Date(userData.dateOfBirth).toISOString().split('T')[0]
+      : null;
+
+    const payload = {
       username: userData.username,
-      password: password
-    }).pipe(
-      map(res => !!res.account_id),
+      password: password,
+      full_name: userData.fullName,
+      phone: userData.phone,
+      birthdate: birthdate,
+      gender: userData.gender,
+      age: this.calculateAge(birthdate)
+    };
+
+    return this.http.post<any>(`${this.apiUrl}/account/register`, payload).pipe(
+      map((res: any) => res.success === true),
       catchError(err => {
         console.error('Register error:', err);
+        if (err.status === 409) alert('ชื่อผู้ใช้นี้มีอยู่ในระบบแล้ว');
+        else if (err.status === 400) alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+        else alert('เกิดข้อผิดพลาดในการสมัครสมาชิก');
         return of(false);
       })
     );
+  }
+
+  // ----------------------
+  // 🔹 ฟังก์ชันคำนวณอายุ
+  // ----------------------
+  private calculateAge(birthdate: string | null): number | null {
+    if (!birthdate) return null;
+    const birth = new Date(birthdate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
   }
 
   // ----------------------
@@ -144,7 +186,7 @@ export class AuthService {
   }
 
   // ----------------------
-  // 🔹 อัปเดตข้อมูลผู้ใช้ (mock)
+  // 🔹 อัปเดตโปรไฟล์ (mock)
   // ----------------------
   updateProfile(userData: Partial<User>): Observable<boolean> {
     return new Observable(observer => {
@@ -158,15 +200,24 @@ export class AuthService {
             this.currentUserSubject.next(updatedUser);
             localStorage.setItem('currentUser', JSON.stringify(updatedUser));
             observer.next(true);
-          } else {
-            observer.next(false);
-          }
-        } else {
-          observer.next(false);
-        }
+          } else observer.next(false);
+        } else observer.next(false);
         observer.complete();
       }, 500);
     });
+  }
+
+  // ----------------------
+  // 🔹 ดึงข้อมูล Member ตาม account_id (สำหรับกรณีต้องใช้แยก)
+  // ----------------------
+  getMemberByAccountId(accountId: number): Observable<any | null> {
+    return this.http.get<any[]>(`${this.apiUrl}/member`).pipe(
+      map(members => members.find(m => m.account_id === accountId) || null),
+      catchError(err => {
+        console.error('getMemberByAccountId error:', err);
+        return of(null);
+      })
+    );
   }
 
   // ----------------------

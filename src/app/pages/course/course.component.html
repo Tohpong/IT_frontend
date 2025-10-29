@@ -6,55 +6,111 @@
         <p class="section-subtitle">เรียนรู้ทักษะใหม่ๆ กับผู้เชี่ยวชาญในแต่ละสาขา</p>
       </div>
 
-      <div class="courses-grid">
-        <div class="course-card" *ngFor="let course of courses; let i = index" [attr.data-index]="i">
+      <!-- ✅ แสดงข้อความโหลดข้อมูล -->
+      <div *ngIf="isLoading" class="loading-text">กำลังโหลดข้อมูลคอร์ส...</div>
+      <div *ngIf="errorMessage" class="error-text">{{ errorMessage }}</div>
+
+      <div class="courses-grid" *ngIf="!isLoading && !errorMessage">
+        <div
+          class="course-card"
+          *ngFor="let course of courses; let i = index"
+          [attr.data-index]="i"
+        >
           <div class="course-image">
-            <img [src]="course.image" [alt]="course.title" class="course-img">
-            <div class="course-level-badge" [style.background]="getLevelColor(course.level)">
+            <img
+              [src]="course.img_url"
+              [alt]="course.course_name"
+              class="course-img"
+            />
+            <div
+              class="course-level-badge"
+              [style.background]="getLevelColor(course.level)"
+            >
               {{ course.level }}
             </div>
           </div>
-          
+
           <div class="course-content">
             <div class="course-header">
-              <h3 class="course-title">{{ course.title }}</h3>
+              <h3 class="course-title">{{ course.course_name }}</h3>
               <div class="course-price">
-                <span class="price-amount">{{ course.price.toLocaleString() }}</span>
+                <span class="price-amount">{{
+                  course.price.toLocaleString()
+                }}</span>
                 <span class="price-currency">บาท</span>
               </div>
             </div>
-            
-            <p class="course-description">{{ course.description }}</p>
-            
+
+            <p class="course-description">
+              {{ course.description }}
+            </p>
+
             <div class="course-meta">
               <div class="meta-item">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <polyline points="12,6 12,12 16,14"/>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12,6 12,12 16,14" />
                 </svg>
                 <span>{{ course.duration }}</span>
               </div>
+
               <div class="meta-item">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                  />
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
                 </svg>
-                <span>{{ getEnrollmentCount(course.id) }}+ ผู้เรียน</span>
+                <span>{{ getEnrollmentCount(course.course_id) }}+ ผู้เรียน</span>
               </div>
             </div>
-            
-            <div class="course-tags">
-              <span class="tag" *ngFor="let tag of course.tags">{{ tag }}</span>
-            </div>
-            
-            <button class="btn btn-success" (click)="enrollCourse(course)">
-  <span>สมัครเรียน</span>
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" 
-       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="m9 18 6-6-6-6"/>
-  </svg>
-</button>
 
+            <!-- ✅ tags จาก string (เช่น 'ฟิตเนส,เริ่มต้น') -->
+            <div class="course-tags">
+              <span
+                class="tag"
+                *ngFor="let tag of (course.tags ? course.tags.split(',') : [])"
+              >
+                {{ tag.trim() }}
+              </span>
+            </div>
+
+            <button class="btn btn-success" (click)="enrollCourse(course)">
+              <span>สมัครเรียน</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>

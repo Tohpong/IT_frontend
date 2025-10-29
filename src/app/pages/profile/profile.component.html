@@ -1,4 +1,3 @@
-
 <div class="profile-container">
   <div class="profile-header">
     <h2>โปรไฟล์ผู้ใช้</h2>
@@ -26,10 +25,11 @@
       </div>
 
       <!-- View Mode -->
-      <div *ngIf="!isEditing" class="profile-view">
+      <div *ngIf="!isEditing && memberData" class="profile-view">
+
         <div class="profile-avatar">
           <div class="avatar-circle">
-            {{ currentUser.fullName?.charAt(0)?.toUpperCase() }}
+            {{ memberData.full_name?.charAt(0)?.toUpperCase() }}
           </div>
         </div>
 
@@ -41,32 +41,27 @@
 
           <div class="info-group">
             <label>ชื่อ-นามสกุล:</label>
-            <span>{{ currentUser.fullName }}</span>
-          </div>
-
-          <div class="info-group">
-            <label>อีเมล:</label>
-            <span>{{ currentUser.email }}</span>
+            <span>{{ memberData.full_name }}</span>
           </div>
 
           <div class="info-group">
             <label>เบอร์โทรศัพท์:</label>
-            <span>{{ currentUser.phone || 'ไม่ระบุ' }}</span>
+            <span>{{ memberData.phone || 'ไม่ระบุ' }}</span>
           </div>
 
           <div class="info-group">
             <label>วันเกิด:</label>
-            <span>{{ formatDate(currentUser.dateOfBirth) }}</span>
+            <span>{{ formatDate(memberData.birthdate) }}</span>
           </div>
 
           <div class="info-group">
             <label>เพศ:</label>
-            <span>{{ getGenderDisplay(currentUser.gender) }}</span>
+            <span>{{ getGenderDisplay(memberData.gender) }}</span>
           </div>
 
           <div class="info-group">
-            <label>วันที่สมัครสมาชิก:</label>
-            <span>{{ formatDate(currentUser.registrationDate) }}</span>
+            <label>อายุ:</label>
+            <span>{{ memberData.age || 'ไม่ระบุ' }}</span>
           </div>
         </div>
 
@@ -78,7 +73,7 @@
       </div>
 
       <!-- Edit Mode -->
-      <div *ngIf="isEditing" class="profile-edit">
+      <div *ngIf="isEditing && memberData" class="profile-edit">
         <form (ngSubmit)="saveProfile()" #profileForm="ngForm">
           <div class="form-group">
             <label for="fullName">ชื่อ-นามสกุล:</label>
@@ -87,18 +82,6 @@
               id="fullName"
               name="fullName"
               [(ngModel)]="editForm.fullName"
-              required
-              class="form-control"
-            >
-          </div>
-
-          <div class="form-group">
-            <label for="email">อีเมล:</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              [(ngModel)]="editForm.email"
               required
               class="form-control"
             >
