@@ -49,14 +49,23 @@ export class RegistrationHistoryComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.currentUser = this.authService.getCurrentUser();
-    if (!this.currentUser) {
-      this.router.navigate(['/login']);
-      return;
-    }
-    this.loadRegistrationHistory();
+  this.currentUser = this.authService.getCurrentUser();
+  if (!this.currentUser) {
+    this.router.navigate(['/login']);
+    return;
   }
+  this.loadRegistrationHistory();
+}
 
+loadRegistrationHistory(): void {
+  const localHistory = JSON.parse(localStorage.getItem('registrationHistory') || '[]');
+  this.registrationHistory = localHistory.sort(
+    (a: any, b: any) => new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime()
+  );
+  this.isLoading = false;
+}
+
+/*
   loadRegistrationHistory(): void {
     if (!this.currentUser) return;
 
@@ -81,6 +90,7 @@ export class RegistrationHistoryComponent implements OnInit {
       }
     });
   }
+*/
 
   toggleAddForm(): void {
     this.showAddForm = !this.showAddForm;

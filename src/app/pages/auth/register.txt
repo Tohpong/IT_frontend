@@ -28,10 +28,9 @@ export class RegisterComponent {
     private router: Router
   ) {}
 
+  // ✅ เมื่อกด "สมัครสมาชิก"
   onSubmit(): void {
-    if (!this.validateForm()) {
-      return;
-    }
+    if (!this.validateForm()) return;
 
     this.isLoading = true;
     this.errorMessage = '';
@@ -42,20 +41,22 @@ export class RegisterComponent {
       email: this.formData.email,
       fullName: this.formData.fullName,
       phone: this.formData.phone,
-      dateOfBirth: this.formData.dateOfBirth ? new Date(this.formData.dateOfBirth) : undefined,
-      gender: this.formData.gender
+      dateOfBirth: this.formData.dateOfBirth
+        ? new Date(this.formData.dateOfBirth)
+        : undefined,
+      gender: this.formData.gender,
+      age: this.calculateAge(this.formData.dateOfBirth)
     };
 
+    // ✅ ส่งข้อมูลไป backend ผ่าน AuthService
     this.authService.register(userData, this.formData.password).subscribe({
       next: (success) => {
         this.isLoading = false;
         if (success) {
           this.successMessage = 'สมัครสมาชิกสำเร็จ! กำลังนำไปหน้าเข้าสู่ระบบ...';
-          setTimeout(() => {
-            this.router.navigate(['/login']);
-          }, 2000);
+          setTimeout(() => this.router.navigate(['/login']), 2000);
         } else {
-          this.errorMessage = 'ชื่อผู้ใช้หรืออีเมลนี้มีอยู่ในระบบแล้ว';
+          this.errorMessage = 'ชื่อผู้ใช้นี้มีอยู่ในระบบแล้ว';
         }
       },
       error: () => {
@@ -65,10 +66,30 @@ export class RegisterComponent {
     });
   }
 
+  // ✅ คำนวณอายุจากวันเกิด
+  private calculateAge(dateString: string): number {
+    if (!dateString) return 0;
+    const diff = Date.now() - new Date(dateString).getTime();
+    return Math.abs(new Date(diff).getUTCFullYear() - 1970);
+  }
+
+  // ✅ ตรวจสอบความถูกต้องของข้อมูลก่อนส่ง
   private validateForm(): boolean {
-    if (!this.formData.username || !this.formData.email || !this.formData.fullName || 
-        !this.formData.password || !this.formData.confirmPassword) {
+    if (
+      !this.formData.username ||
+      !this.formData.email ||
+      !this.formData.fullName ||
+      !this.formData.password ||
+      !this.formData.confirmPassword
+    ) {
       this.errorMessage = 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน';
+      return false;
+    }
+
+    // ตรวจรูปแบบอีเมล
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(this.formData.email)) {
+      this.errorMessage = 'กรุณากรอกอีเมลให้ถูกต้อง';
       return false;
     }
 
@@ -82,12 +103,6 @@ export class RegisterComponent {
       return false;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(this.formData.email)) {
-      this.errorMessage = 'รูปแบบอีเมลไม่ถูกต้อง';
-      return false;
-    }
-
     return true;
   }
 
@@ -95,3 +110,150 @@ export class RegisterComponent {
     this.router.navigate(['/login']);
   }
 }
+
+///////////////
+
+<div class="register-container">
+  <div class="register-card">
+    <h2>สมัครสมาชิก</h2>
+    
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <!-- 🔹 ชื่อผู้ใช้ -->
+      <div class="form-group">
+        <label for="username">ชื่อผู้ใช้ *:</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          [(ngModel)]="formData.username"
+          required
+          class="form-control"
+          placeholder="กรอกชื่อผู้ใช้"
+        >
+      </div>
+
+      <!-- 🔹 อีเมล -->
+      <div class="form-group">
+        <label for="email">อีเมล *:</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          [(ngModel)]="formData.email"
+          required
+          class="form-control"
+          placeholder="example@email.com"
+        >
+      </div>
+
+      <!-- 🔹 ชื่อ-นามสกุล -->
+      <div class="form-group">
+        <label for="fullName">ชื่อ-นามสกุล *:</label>
+        <input
+          type="text"
+          id="fullName"
+          name="fullName"
+          [(ngModel)]="formData.fullName"
+          required
+          class="form-control"
+          placeholder="กรอกชื่อ-นามสกุล"
+        >
+      </div>
+
+      <!-- 🔹 เบอร์โทรศัพท์ + วันเกิด -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="phone">เบอร์โทรศัพท์:</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            [(ngModel)]="formData.phone"
+            class="form-control"
+            placeholder="กรอกเบอร์โทรศัพท์"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="dateOfBirth">วันเกิด:</label>
+          <input
+            type="date"
+            id="dateOfBirth"
+            name="dateOfBirth"
+            [(ngModel)]="formData.dateOfBirth"
+            class="form-control"
+          >
+        </div>
+      </div>
+
+      <!-- 🔹 เพศ -->
+      <div class="form-group">
+        <label for="gender">เพศ:</label>
+        <select
+          id="gender"
+          name="gender"
+          [(ngModel)]="formData.gender"
+          class="form-control"
+        >
+          <option value="">เลือกเพศ</option>
+          <option value="male">ชาย</option>
+          <option value="female">หญิง</option>
+          <option value="other">อื่นๆ</option>
+        </select>
+      </div>
+
+      <!-- 🔹 รหัสผ่าน -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password">รหัสผ่าน *:</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            [(ngModel)]="formData.password"
+            required
+            class="form-control"
+            placeholder="กรอกรหัสผ่าน (อย่างน้อย 6 ตัวอักษร)"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">ยืนยันรหัสผ่าน *:</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            [(ngModel)]="formData.confirmPassword"
+            required
+            class="form-control"
+            placeholder="ยืนยันรหัสผ่าน"
+          >
+        </div>
+      </div>
+
+      <!-- 🔹 แสดงข้อความสถานะ -->
+      <div class="success-message" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <!-- 🔹 ปุ่มสมัครสมาชิก -->
+      <button
+        type="submit"
+        [disabled]="isLoading"
+        class="btn btn-primary"
+      >
+        <span *ngIf="isLoading">กำลังสมัครสมาชิก...</span>
+        <span *ngIf="!isLoading">สมัครสมาชิก</span>
+      </button>
+    </form>
+
+    <!-- 🔹 ลิงก์ไปหน้าเข้าสู่ระบบ -->
+    <div class="login-link">
+      <p>มีบัญชีอยู่แล้ว? <a (click)="goToLogin()" class="link">เข้าสู่ระบบ</a></p>
+    </div>
+  </div>
+</div>

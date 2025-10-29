@@ -29,60 +29,31 @@ interface Benefit {
 export class CourseComponent implements OnInit {
   courses: Course[] = [];
   courseBenefits: Benefit[] = [
-    {
-      icon: '💪',
-      title: 'เทรนเนอร์มืออาชีพ',
-      description: 'ฝึกกับเทรนเนอร์ที่ได้รับการรับรองและมีประสบการณ์สูง'
-    },
-    {
-      icon: '🏋️',
-      title: 'อุปกรณ์ครบครัน',
-      description: 'อุปกรณ์ออกกำลังกายทันสมัยและหลากหลาย'
-    },
-    {
-      icon: '📈',
-      title: 'ติดตามผลลัพธ์',
-      description: 'วัดผลและติดตามความก้าวหน้าของร่างกายอย่างชัดเจน'
-    },
-    {
-      icon: '🏆',
-      title: 'โปรแกรมส่วนตัว',
-      description: 'โปรแกรมการออกกำลังกายที่ปรับตามความต้องการของคุณ'
-    },
-    {
-      icon: '👥',
-      title: 'ชุมชนสุขภาพดี',
-      description: 'เข้าร่วมกลุ่มผู้ที่รักการออกกำลังกายและแลกเปลี่ยนประสบการณ์'
-    },
-    {
-      icon: '📞',
-      title: 'ปรึกษาได้ทุกเวลา',
-      description: 'ให้คำปรึกษาด้านสุขภาพและการออกกำลังกายตลอด 24 ชั่วโมง'
-    }
+    { icon: '💪', title: 'เทรนเนอร์มืออาชีพ', description: 'ฝึกกับเทรนเนอร์ที่ได้รับการรับรองและมีประสบการณ์สูง' },
+    { icon: '🏋️', title: 'อุปกรณ์ครบครัน', description: 'อุปกรณ์ออกกำลังกายทันสมัยและหลากหลาย' },
+    { icon: '📈', title: 'ติดตามผลลัพธ์', description: 'วัดผลและติดตามความก้าวหน้าของร่างกายอย่างชัดเจน' },
+    { icon: '🏆', title: 'โปรแกรมส่วนตัว', description: 'โปรแกรมการออกกำลังกายที่ปรับตามความต้องการของคุณ' },
+    { icon: '👥', title: 'ชุมชนสุขภาพดี', description: 'เข้าร่วมกลุ่มผู้ที่รักการออกกำลังกายและแลกเปลี่ยนประสบการณ์' },
+    { icon: '📞', title: 'ปรึกษาได้ทุกเวลา', description: 'ให้คำปรึกษาด้านสุขภาพและการออกกำลังกายตลอด 24 ชั่วโมง' }
   ];
 
   isLoading = false;
   errorMessage = '';
 
-  private apiUrl = 'http://localhost:8000/course'; // ✅ backend API
+  private apiUrl = 'http://localhost:8000/course';
 
-  constructor(
-    private http: HttpClient,
-    private router: Router
-  ) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   ngOnInit(): void {
     this.loadCourses();
   }
 
-  /** ✅ โหลดข้อมูลคอร์สจากฐานข้อมูล */
   loadCourses(): void {
     this.isLoading = true;
     this.http.get<Course[]>(this.apiUrl).subscribe({
       next: (res) => {
         this.courses = res.map(c => ({
           ...c,
-          // fallback สำหรับข้อมูลว่าง
           img_url: c.img_url || 'https://via.placeholder.com/800x400?text=No+Image',
           description: c.description || 'ไม่มีคำอธิบายคอร์ส',
           level: c.level || 'ไม่ระบุ',
@@ -99,35 +70,25 @@ export class CourseComponent implements OnInit {
     });
   }
 
-  /** ✅ ฟังก์ชันนับผู้สมัคร (mock ไว้ก่อน) */
   getEnrollmentCount(courseId: number): number {
     const counts = [120, 85, 150, 95, 110, 75];
     return counts[(courseId - 1) % counts.length];
   }
 
-  /** ✅ สีระดับความยาก */
   getLevelColor(level: string): string {
     switch (level.toLowerCase()) {
       case 'beginner':
-      case 'เริ่มต้น':
-        return 'linear-gradient(135deg, #4CAF50, #66BB6A)';
+      case 'เริ่มต้น': return 'linear-gradient(135deg, #4CAF50, #66BB6A)';
       case 'intermediate':
-      case 'กลาง':
-        return 'linear-gradient(135deg, #FF9800, #FFB74D)';
+      case 'กลาง': return 'linear-gradient(135deg, #FF9800, #FFB74D)';
       case 'advanced':
-      case 'สูง':
-        return 'linear-gradient(135deg, #F44336, #EF5350)';
-      default:
-        return 'linear-gradient(135deg, #4CAF50, #66BB6A)';
+      case 'สูง': return 'linear-gradient(135deg, #F44336, #EF5350)';
+      default: return 'linear-gradient(135deg, #4CAF50, #66BB6A)';
     }
   }
 
-  /** ✅ ไปหน้าสมัครคอร์ส */
-  
+  /** ✅ ไปหน้าสมัครคอร์ส (ส่ง id ไปแทน JSON) */
   enrollCourse(course: Course): void {
-    const courseData = encodeURIComponent(JSON.stringify(course));
-    this.router.navigate(['/course-enrollment'], { 
-      queryParams: { courseData: courseData }
-    });
+    this.router.navigate(['/course-enrollment'], { queryParams: { id: course.course_id } });
   }
 }

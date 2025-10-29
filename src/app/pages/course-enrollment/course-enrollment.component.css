@@ -420,8 +420,8 @@
 /* Checkbox */
 .checkbox-option {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 10px; /* ✅ เว้นระยะระหว่างช่องติ๊กกับข้อความ */
   cursor: pointer;
   line-height: 1.5;
 }
@@ -433,23 +433,22 @@
 .checkbox-custom {
   width: 20px;
   height: 20px;
-  border: 2px solid var(--border-light);
+  border: 2px solid #000; /* ✅ ขอบสีดำ */
   border-radius: 4px;
   position: relative;
   transition: all 0.3s ease;
   flex-shrink: 0;
-  margin-top: 2px;
 }
 
 .checkbox-option input[type="checkbox"]:checked + .checkbox-custom {
-  border-color: var(--primary-green);
-  background: var(--primary-green);
+  background: #000; /* ✅ พื้นหลังดำเมื่อถูกติ๊ก */
+  border-color: #000;
 }
 
 .checkbox-option input[type="checkbox"]:checked + .checkbox-custom::after {
   content: '✓';
   position: absolute;
-  top: 50%;
+  top: 46%;
   left: 50%;
   transform: translate(-50%, -50%);
   color: white;
@@ -457,9 +456,7 @@
   font-weight: bold;
 }
 
-.checkbox-option input[type="checkbox"].error + .checkbox-custom {
-  border-color: var(--error-color);
-}
+
 
 .checkbox-label {
   color: var(--text-dark);

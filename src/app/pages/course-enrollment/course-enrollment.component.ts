@@ -1,32 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 interface Course {
-  id: number;
-  title: string;
+  course_id: number;
+  course_name: string;
   description: string;
   duration: string;
   price: number;
   level: string;
-  image: string;
-  tags: string[];
-}
-
-interface EnrollmentForm {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  birthDate: string;
-  address: string;
-  emergencyContact: string;
-  emergencyPhone: string;
-  medicalConditions: string;
-  experience: string;
-  goals: string;
-  paymentMethod: string;
-  agreeTerms: boolean;
+  img_url: string;
+  tags: string;
+  trainer_name: string;
 }
 
 @Component({
@@ -35,38 +21,96 @@ interface EnrollmentForm {
   styleUrls: ['./course-enrollment.component.css']
 })
 export class CourseEnrollmentComponent implements OnInit {
-  enrollmentForm: FormGroup;
-  course: Course | null = null;
+  enrollmentForm!: FormGroup;
+  course!: Course | null;
   isSubmitting = false;
   showSuccessMessage = false;
+  isLoading = false;
+  errorMessage = '';
+
+  private courseApiUrl = 'http://localhost:8000/course';
+  private memberApiUrl = 'http://localhost:8000/member';
+  private accountApiUrl = 'http://localhost:8000/account';
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private formBuilder: FormBuilder
-  ) {
-    this.enrollmentForm = this.createForm();
-  }
+    private fb: FormBuilder,
+    private http: HttpClient
+  ) {}
 
   ngOnInit(): void {
+    this.enrollmentForm = this.createForm();
+
+    // ✅ โหลดข้อมูลคอร์ส
     this.route.queryParams.subscribe(params => {
-      if (params['courseData']) {
-        try {
-          this.course = JSON.parse(decodeURIComponent(params['courseData']));
-        } catch (error) {
-          console.error('Error parsing course data:', error);
-          this.router.navigate(['/course']);
-        }
-      } else {
-        this.router.navigate(['/course']);
+      const id = params['id'];
+      if (id) this.loadCourse(id);
+      else this.router.navigate(['/course']);
+    });
+
+    // ✅ ดึงข้อมูลสมาชิกถ้ามี (เช่น หลังล็อกอิน)
+    this.loadMemberInfo();
+  }
+
+  /** ✅ โหลดข้อมูลคอร์สจาก backend */
+  loadCourse(id: number): void {
+    this.isLoading = true;
+    this.http.get<Course>(`${this.courseApiUrl}/${id}`).subscribe({
+      next: (res) => {
+        this.course = res;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('❌ โหลดข้อมูลคอร์สผิดพลาด:', err);
+        this.errorMessage = 'ไม่พบข้อมูลคอร์ส';
+        this.isLoading = false;
       }
     });
   }
 
+  /** ✅ โหลดข้อมูลสมาชิกจาก backend (ถ้ามี account_id) */
+  loadMemberInfo(): void {
+    const accountData = localStorage.getItem('user'); // สมมติว่าเก็บข้อมูลผู้ใช้หลังล็อกอินไว้ใน localStorage
+    if (!accountData) return; // ยังไม่ได้ล็อกอิน
+
+    const user = JSON.parse(accountData);
+    const accountId = user.account_id;
+
+    if (!accountId) return;
+
+    // ✅ ดึงข้อมูล Member จาก backend
+    this.http.get<any>(`${this.memberApiUrl}/${accountId}`).subscribe({
+      next: (member) => {
+        console.log('📥 โหลดข้อมูลสมาชิก:', member);
+
+        // ✅ เติมค่าในฟอร์ม (เฉพาะฟิลด์ที่ต้องการ)
+        this.enrollmentForm.patchValue({
+          fullName: member.full_name || '',
+          email: member.email || '',   // ถ้ามี email ใน member หรืออาจต้องดึงจาก account
+          phone: member.phone || ''
+        });
+
+        // ✅ ถ้า member ไม่มี email ให้ลองดึงจากตาราง Account
+        if (!member.email) {
+          this.http.get<any>(`${this.accountApiUrl}/${accountId}`).subscribe({
+            next: (acc) => {
+              this.enrollmentForm.patchValue({ email: acc.email || '' });
+            },
+            error: (err) => console.warn('ไม่พบ email ใน account', err)
+          });
+        }
+      },
+      error: (err) => {
+        console.error('❌ โหลดข้อมูลสมาชิกผิดพลาด:', err);
+      }
+    });
+  }
+
+  /** ✅ ฟอร์มสมัครเรียน */
   createForm(): FormGroup {
-    return this.formBuilder.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
+    return this.fb.group({
+      fullName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       medicalConditions: [''],
@@ -77,96 +121,62 @@ export class CourseEnrollmentComponent implements OnInit {
     });
   }
 
+  /** ✅ เมื่อกดปุ่มสมัคร */
   onSubmit(): void {
     if (this.enrollmentForm.valid && this.course) {
       this.isSubmitting = true;
-      
-      const enrollmentData = {
-        ...this.enrollmentForm.value,
-        courseId: this.course.id,
-        courseTitle: this.course.title,
-        coursePrice: this.course.price,
-        enrollmentDate: new Date().toISOString()
+
+      const formValue = this.enrollmentForm.value;
+
+      const payload = {
+        full_name: formValue.fullName,
+        email: formValue.email,
+        phone: formValue.phone,
+        course_id: this.course.course_id,
+        course_name: this.course.course_name,
+        price: this.course.price,
+        enrollment_date: new Date().toISOString(),
+        experience: formValue.experience,
+        goals: formValue.goals,
+        medical_conditions: formValue.medicalConditions
       };
 
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Enrollment Data:', enrollmentData);
-        
-        // Save to localStorage (in real app, send to backend)
-        const existingEnrollments = JSON.parse(localStorage.getItem('courseEnrollments') || '[]');
-        existingEnrollments.push(enrollmentData);
-        localStorage.setItem('courseEnrollments', JSON.stringify(existingEnrollments));
-        
-        // Save to registration history
-        if (this.course) {
-          const registrationHistoryData = {
-            id: Date.now(),
-            userId: 1, // In real app, get from auth service
-            courseId: this.course.id,
-            courseName: this.course.title,
-            registrationDate: new Date(),
-            status: 'active',
-            price: this.course.price,
-            studentName: `${enrollmentData.firstName} ${enrollmentData.lastName}`,
-            email: enrollmentData.email,
-            phone: enrollmentData.phone,
-            paymentMethod: enrollmentData.paymentMethod
-          };
-          
-          const existingHistory = JSON.parse(localStorage.getItem('registrationHistory') || '[]');
-          existingHistory.push(registrationHistoryData);
-          localStorage.setItem('registrationHistory', JSON.stringify(existingHistory));
-        }
-        
-        this.isSubmitting = false;
-        this.showSuccessMessage = true;
-        
-        // Redirect to registration history after success
-        setTimeout(() => {
-          this.router.navigate(['/registration-history']);
-        }, 3000);
-      }, 2000);
+      console.log('📦 ส่งข้อมูลไป Backend:', payload);
+
+      this.http.post('http://localhost:8000/enroll', payload).subscribe({
+        next: (res) => {
+          console.log('✅ สมัครเรียนสำเร็จ', res);
+          this.showSuccessMessage = true;
+          setTimeout(() => this.router.navigate(['/registration-history']), 3000);
+        },
+        error: (err) => {
+          console.error('❌ เกิดข้อผิดพลาดขณะสมัคร:', err);
+          this.isSubmitting = false;
+        },
+      });
     } else {
       this.markFormGroupTouched();
     }
   }
 
   markFormGroupTouched(): void {
-    Object.keys(this.enrollmentForm.controls).forEach(key => {
-      const control = this.enrollmentForm.get(key);
-      control?.markAsTouched();
-    });
+    Object.values(this.enrollmentForm.controls).forEach(c => c.markAsTouched());
   }
 
-  isFieldInvalid(fieldName: string): boolean {
-    const field = this.enrollmentForm.get(fieldName);
-    return !!(field && field.invalid && (field.dirty || field.touched));
+  isFieldInvalid(field: string): boolean {
+    const ctrl = this.enrollmentForm.get(field);
+    return !!(ctrl && ctrl.invalid && (ctrl.dirty || ctrl.touched));
   }
 
-  getFieldError(fieldName: string): string {
-    const field = this.enrollmentForm.get(fieldName);
-    if (field?.errors) {
-      if (field.errors['required']) return `${this.getFieldLabel(fieldName)} จำเป็นต้องกรอก`;
-      if (field.errors['email']) return 'รูปแบบอีเมลไม่ถูกต้อง';
-      if (field.errors['minlength']) return `${this.getFieldLabel(fieldName)} ต้องมีอย่างน้อย ${field.errors['minlength'].requiredLength} ตัวอักษร`;
-      if (field.errors['pattern']) return 'รูปแบบหมายเลขโทรศัพท์ไม่ถูกต้อง (10 หลัก)';
-      if (field.errors['requiredTrue']) return 'กรุณายอมรับข้อกำหนดและเงื่อนไข';
-    }
+  getFieldError(field: string): string {
+    const ctrl = this.enrollmentForm.get(field);
+    if (!ctrl || !ctrl.errors) return '';
+    if (ctrl.errors['required']) return 'กรุณากรอกข้อมูล';
+    if (ctrl.errors['email']) return 'อีเมลไม่ถูกต้อง';
+    if (ctrl.errors['pattern']) return 'หมายเลขโทรศัพท์ไม่ถูกต้อง';
+    if (ctrl.errors['requiredTrue']) return 'กรุณายอมรับเงื่อนไข';
+    if (ctrl.errors['minlength']) return 'ข้อมูลสั้นเกินไป';
     return '';
-  }
-
-  getFieldLabel(fieldName: string): string {
-    const labels: { [key: string]: string } = {
-      firstName: 'ชื่อ',
-      lastName: 'นามสกุล',
-      email: 'อีเมล',
-      phone: 'เบอร์โทรศัพท์',
-      experience: 'ระดับประสบการณ์',
-      goals: 'เป้าหมายในการเรียน',
-      paymentMethod: 'วิธีการชำระเงิน'
-    };
-    return labels[fieldName] || fieldName;
   }
 
   goBack(): void {
