@@ -28,10 +28,16 @@
       <div *ngIf="!isEditing && memberData" class="profile-view">
 
         <div class="profile-avatar">
-          <div class="avatar-circle">
-            {{ memberData.full_name?.charAt(0)?.toUpperCase() }}
+          <div *ngIf="profileImage; else noImage">
+            <img [src]="profileImage" alt="Profile" class="avatar-img">
           </div>
+          <ng-template #noImage>
+            <div class="avatar-circle">
+              {{ memberData.full_name?.charAt(0)?.toUpperCase() }}
+            </div>
+          </ng-template>
         </div>
+
 
         <div class="profile-info">
           <div class="info-group">
@@ -42,6 +48,11 @@
           <div class="info-group">
             <label>ชื่อ-นามสกุล:</label>
             <span>{{ memberData.full_name }}</span>
+          </div>
+
+          <div class="info-group">
+            <label>อีเมล:</label>
+            <span>{{ memberData.email || 'ไม่ระบุ' }}</span>
           </div>
 
           <div class="info-group">
@@ -88,6 +99,18 @@
           </div>
 
           <div class="form-group">
+            <label for="email">อีเมล:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              [(ngModel)]="editForm.email"
+              class="form-control"
+              required
+            >
+          </div>
+
+          <div class="form-group">
             <label for="phone">เบอร์โทรศัพท์:</label>
             <input
               type="tel"
@@ -122,6 +145,18 @@
               <option value="female">หญิง</option>
               <option value="other">อื่นๆ</option>
             </select>
+          </div>
+
+          <div class="form-group">
+            <label for="age">อายุ:</label>
+            <input
+              type="number"
+              id="age"
+              name="age"
+              [(ngModel)]="editForm.age"
+              class="form-control"
+              min="0"
+            >
           </div>
 
           <div class="form-actions">

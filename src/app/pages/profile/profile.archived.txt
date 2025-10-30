@@ -1,0 +1,636 @@
+.profile-page {
+  background: white;
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.profile-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #eee;
+}
+
+.profile-header h2 {
+  color: #333;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.profile-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+}
+
+.profile-avatar {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.avatar-circle {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: bold;
+  color: white;
+  text-transform: uppercase;
+}
+
+.avatar-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #22C55E;
+}
+
+.profile-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.info-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-group label {
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-group span {
+  color: #333;
+  font-size: 16px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.profile-actions {
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #555;
+  font-weight: 500;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #5a6268;
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #c82333;
+  transform: translateY(-2px);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  text-align: center;
+  border: 1px solid #c3e6cb;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  text-align: center;
+  border: 1px solid #fcc;
+}
+
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .profile-card {
+    padding: 20px;
+  }
+
+  .profile-info {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+}
+
+//////////////////////
+
+
+<div class="profile-container">
+  <div class="profile-header">
+    <h2>โปรไฟล์ผู้ใช้</h2>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="goToWorkoutHistory()">
+        ประวัติการออกกำลังกาย
+      </button>
+      <button class="btn btn-secondary" (click)="goToRegistrationHistory()">
+        ประวัติการสมัคร
+      </button>
+      <button class="btn btn-danger" (click)="logout()">
+        ออกจากระบบ
+      </button>
+    </div>
+  </div>
+
+  <div class="profile-content" *ngIf="currentUser">
+    <div class="profile-card">
+
+      <div class="success-message" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <!-- View Mode -->
+      <div *ngIf="!isEditing && memberData" class="profile-view">
+
+        <div class="profile-avatar">
+          <div *ngIf="profileImage; else noImage">
+            <img [src]="profileImage" alt="Profile" class="avatar-img">
+          </div>
+          <ng-template #noImage>
+            <div class="avatar-circle">
+              {{ memberData.full_name?.charAt(0)?.toUpperCase() }}
+            </div>
+          </ng-template>
+
+          <!-- ✅ ปุ่มอัปโหลด -->
+          <div class="upload-section">
+            <input type="file" (change)="onFileSelected($event)" accept="image/*">
+            <button
+              class="btn btn-primary"
+              (click)="uploadProfileImage()"
+              [disabled]="!selectedFile"
+            >
+              อัปโหลดรูปใหม่
+            </button>
+            <div *ngIf="uploadProgress > 0">
+              กำลังอัปโหลด... {{ uploadProgress }}%
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-info">
+          <div class="info-group">
+            <label>ชื่อผู้ใช้:</label>
+            <span>{{ currentUser.username }}</span>
+          </div>
+
+          <div class="info-group">
+            <label>ชื่อ-นามสกุล:</label>
+            <span>{{ memberData.full_name }}</span>
+          </div>
+
+          <div class="info-group">
+            <label>อีเมล:</label>
+            <span>{{ memberData.email || 'ไม่ระบุ' }}</span>
+          </div>
+
+          <div class="info-group">
+            <label>เบอร์โทรศัพท์:</label>
+            <span>{{ memberData.phone || 'ไม่ระบุ' }}</span>
+          </div>
+
+          <div class="info-group">
+            <label>วันเกิด:</label>
+            <span>{{ formatDate(memberData.birthdate) }}</span>
+          </div>
+
+          <div class="info-group">
+            <label>เพศ:</label>
+            <span>{{ getGenderDisplay(memberData.gender) }}</span>
+          </div>
+
+          <div class="info-group">
+            <label>อายุ:</label>
+            <span>{{ memberData.age || 'ไม่ระบุ' }}</span>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button class="btn btn-primary" (click)="toggleEdit()">
+            แก้ไขโปรไฟล์
+          </button>
+        </div>
+      </div>
+
+      <!-- Edit Mode -->
+      <div *ngIf="isEditing && memberData" class="profile-edit">
+        <form (ngSubmit)="saveProfile()" #profileForm="ngForm">
+          <div class="form-group">
+            <label for="fullName">ชื่อ-นามสกุล:</label>
+            <input
+              type="text"
+              id="fullName"
+              name="fullName"
+              [(ngModel)]="editForm.fullName"
+              required
+              class="form-control"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="email">อีเมล:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              [(ngModel)]="editForm.email"
+              class="form-control"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="phone">เบอร์โทรศัพท์:</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              [(ngModel)]="editForm.phone"
+              class="form-control"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="dateOfBirth">วันเกิด:</label>
+            <input
+              type="date"
+              id="dateOfBirth"
+              name="dateOfBirth"
+              [(ngModel)]="editForm.dateOfBirth"
+              class="form-control"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="gender">เพศ:</label>
+            <select
+              id="gender"
+              name="gender"
+              [(ngModel)]="editForm.gender"
+              class="form-control"
+            >
+              <option value="">เลือกเพศ</option>
+              <option value="male">ชาย</option>
+              <option value="female">หญิง</option>
+              <option value="other">อื่นๆ</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="submit"
+              [disabled]="isLoading"
+              class="btn btn-primary"
+            >
+              <span *ngIf="isLoading">กำลังบันทึก...</span>
+              <span *ngIf="!isLoading">บันทึก</span>
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="toggleEdit()"
+            >
+              ยกเลิก
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+/////////////////////////////
+
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { HttpClient, HttpEventType } from '@angular/common/http';
+import { AuthService, User } from '../../services/auth.service';
+
+@Component({
+  selector: 'app-profile',
+  templateUrl: './profile.component.html',
+  styleUrls: ['./profile.component.css']
+})
+export class ProfileComponent implements OnInit {
+  currentUser: User | null = null;
+  memberData: any = null;
+  isEditing = false;
+  isLoading = false;
+  successMessage = '';
+  errorMessage = '';
+  editForm: any = {};
+  profileImage: string | null = null;
+
+  selectedFile: File | null = null;
+  uploadProgress = 0;
+
+  private apiUrl = 'http://localhost:8000/member';
+
+  constructor(
+    private authService: AuthService,
+    private http: HttpClient,
+    private router: Router
+  ) {}
+
+    ngOnInit(): void {
+    this.currentUser = this.authService.getCurrentUser();
+    if (!this.currentUser) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const memberId = this.currentUser['member_id'];
+    if (memberId) {
+      this.loadMemberData(memberId);
+    } else {
+      const accountId = this.currentUser.id;
+      this.http.get<any[]>(`${this.apiUrl}`).subscribe({
+        next: (members) => {
+          const member = members.find(m => m.account_id === accountId);
+          if (member) {
+            this.memberData = member;
+            this.profileImage = member.account_pic || null;
+            this.resetEditForm();
+          } else {
+            this.errorMessage = 'ไม่พบข้อมูลสมาชิกที่เชื่อมกับบัญชีนี้';
+          }
+        },
+        error: (err) => {
+          console.error('โหลดข้อมูลสมาชิกผิดพลาด:', err);
+          this.errorMessage = 'ไม่สามารถโหลดข้อมูลสมาชิกได้';
+        }
+      });
+    }
+  }
+
+  private loadMemberData(memberId: number): void {
+    this.http.get(`${this.apiUrl}/${memberId}`).subscribe({
+      next: (res: any) => {
+        this.memberData = res;
+        this.profileImage = res.account_pic || null;
+        this.resetEditForm(); // ✅ ดึง email ทันทีตั้งแต่ต้น
+      },
+      error: (err) => {
+        console.error('โหลดข้อมูลสมาชิกผิดพลาด:', err);
+        this.errorMessage = 'ไม่สามารถโหลดข้อมูลสมาชิกได้';
+      }
+    });
+  }
+
+  // ✅ โหลดค่าลงฟอร์ม
+  resetEditForm(): void {
+    if (this.memberData) {
+      this.editForm = {
+        fullName: this.memberData.full_name || '',
+        email: this.memberData.email || '',
+        phone: this.memberData.phone || '',
+        dateOfBirth: this.memberData.birthdate
+          ? new Date(this.memberData.birthdate).toISOString().split('T')[0]
+          : '',
+        gender: this.memberData.gender || ''
+      };
+    }
+  }
+
+  // ✅ เมื่อเลือกไฟล์
+  onFileSelected(event: any): void {
+    this.selectedFile = event.target.files[0];
+    if (this.selectedFile) {
+      const reader = new FileReader();
+      reader.onload = e => (this.profileImage = e.target?.result as string);
+      reader.readAsDataURL(this.selectedFile);
+    }
+  }
+  
+  // ✅ อัปโหลดไฟล์ไป backend
+  uploadProfileImage(): void {
+    if (!this.selectedFile || !this.currentUser) return;
+
+    const formData = new FormData();
+    formData.append('profileImage', this.selectedFile);
+
+    const accountId = this.currentUser.id;
+
+    this.http.post(`${this.apiUrl}/upload/${accountId}`, formData, {
+      reportProgress: true,
+      observe: 'events'
+    }).subscribe({
+      next: (event: any) => {
+        if (event.type === HttpEventType.UploadProgress && event.total) {
+          this.uploadProgress = Math.round((100 * event.loaded) / event.total);
+        } else if (event.body?.imageUrl) {
+          this.profileImage = 'http://localhost:8000' + event.body.imageUrl;
+          this.successMessage = 'อัปโหลดรูปสำเร็จ';
+          this.uploadProgress = 0;
+        }
+      },
+      error: (err) => {
+        console.error('Upload error:', err);
+        this.errorMessage = 'อัปโหลดรูปไม่สำเร็จ';
+      }
+    });
+  }
+
+  toggleEdit(): void {
+    this.isEditing = !this.isEditing;
+    if (!this.isEditing) {
+      this.resetEditForm();
+    }
+    this.successMessage = '';
+    this.errorMessage = '';
+  }
+
+  private calcAge(dateString: string): number | null {
+    if (!dateString) return null;
+    const birth = new Date(dateString);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  }
+
+  saveProfile(): void {
+    this.isLoading = true;
+    this.successMessage = '';
+    this.errorMessage = '';
+
+    const updateData = {
+      full_name: this.editForm.fullName,
+      email: this.editForm.email,
+      phone: this.editForm.phone,
+      birthdate: this.editForm.dateOfBirth || null,
+      gender: this.editForm.gender,
+      age: this.calcAge(this.editForm.dateOfBirth)
+    };
+
+    if (!this.memberData?.member_id) {
+      this.errorMessage = 'ไม่พบรหัสสมาชิก';
+      this.isLoading = false;
+      return;
+    }
+
+    this.http.patch(`${this.apiUrl}/${this.memberData.member_id}`, updateData).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
+        this.successMessage = 'บันทึกข้อมูลเรียบร้อยแล้ว';
+        this.isEditing = false;
+        this.memberData = res;
+        this.profileImage = res.account_pic || this.profileImage;
+        setTimeout(() => (this.successMessage = ''), 3000);
+      },
+      error: (err) => {
+        console.error('เกิดข้อผิดพลาดในการบันทึก:', err);
+        this.isLoading = false;
+        this.errorMessage = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
+      }
+    });
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/home']);
+  }
+
+  goToWorkoutHistory(): void {
+    this.router.navigate(['/workout-history']);
+  }
+
+  goToRegistrationHistory(): void {
+    this.router.navigate(['/registration-history']);
+  }
+
+  formatDate(date: string | Date | null | undefined): string {
+    if (!date) return 'ไม่ระบุ';
+    try {
+      return new Date(date).toLocaleDateString('th-TH');
+    } catch {
+      return 'ไม่ถูกต้อง';
+    }
+  }
+
+  getGenderDisplay(gender: string | undefined): string {
+    switch (gender?.toLowerCase()) {
+      case 'male': return 'ชาย';
+      case 'female': return 'หญิง';
+      case 'other': return 'อื่นๆ';
+      default: return 'ไม่ระบุ';
+    }
+  }
+}

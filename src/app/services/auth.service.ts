@@ -123,33 +123,10 @@ export class AuthService {
   // ----------------------
   // 🔹 Register (ส่งตรงไป backend /account/register)
   // ----------------------
-register(accountData: any, memberData: any): Observable<boolean> {
-  // ✅ เตรียม payload ให้ตรงกับ backend
-  const payload = {
-    username: accountData.username,
-    password: accountData.password,
-    email: accountData.email || '',
-    full_name: memberData.fullName,
-    phone: memberData.phone,
-    birthdate: memberData.dateOfBirth
-      ? new Date(memberData.dateOfBirth).toISOString().split('T')[0]
-      : null,
-    gender: memberData.gender
-  };
-
-  console.log('📦 ส่งข้อมูลไป backend:', payload);
-
-  return this.http.post<any>(`${this.apiUrl}/account/register`, payload).pipe(
-    map((res: any) => res.success === true),
-    catchError(err => {
-      console.error('Register error:', err);
-      if (err.status === 409) alert('ชื่อผู้ใช้นี้มีอยู่ในระบบแล้ว');
-      else if (err.status === 400) alert('กรุณากรอกข้อมูลให้ครบถ้วน');
-      else alert('เกิดข้อผิดพลาดในการสมัครสมาชิก');
-      return of(false);
-    })
-  );
+register(payload: any): Observable<any> {
+  return this.http.post(`${this.apiUrl}/account/register`, payload);
 }
+
 
 
   // ----------------------

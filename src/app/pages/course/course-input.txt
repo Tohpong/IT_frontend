@@ -1,0 +1,10 @@
+  {
+    "course_name": "Functional Training",
+    "description": "พัฒนาความแข็งแรงและการเคลื่อนไหวที่ใช้ในชีวิตประจำวัน",
+    "duration": "55 นาที",
+    "img_url": "https://cdn.centr.com/content/26000/25412/images/landscapewidedesktop1x-ec41255412947b51796bd952c5bafe04-ic-what-is-functional-training-inline-6-169-16922.jpg",
+    "price": 1700,
+    "level": "กลาง",
+    "tags": "ฟังก์ชัน, ชีวิตประจำวัน, การเคลื่อนไหว"
+  }
+
