@@ -6,7 +6,6 @@
       "use": "@vercel/static-build"
     }
   ],
-  "framework": "angular",
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ]
