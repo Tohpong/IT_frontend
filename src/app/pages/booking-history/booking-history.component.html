@@ -1,0 +1,110 @@
+<div class="booking-history-container">
+  <div class="header">
+    <h2>ประวัติการจองเทรนเนอร์</h2>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="goBack()">
+        กลับ
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>กำลังโหลดข้อมูล...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && errorMessage" class="error-message">
+    <p>{{ errorMessage }}</p>
+    <button (click)="loadBookingHistory()">ลองใหม่อีกครั้ง</button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !errorMessage && bookings.length === 0" class="empty-state">
+    <p>ยังไม่มีประวัติการจอง</p>
+    <button (click)="goBack()">เลือกเทรนเนอร์</button>
+  </div>
+
+  <!-- Bookings List -->
+  <div *ngIf="!loading && !errorMessage && bookings.length > 0" class="bookings-list">
+    <div class="booking-card" *ngFor="let booking of bookings">
+      <div class="booking-header">
+        <div class="trainer-name">
+          {{ booking.trainer?.trainer_fullname || 'เทรนเนอร์ไม่ระบุ' }}
+        </div>
+        <div class="booking-id">
+          #{{ booking.booking_id }}
+        </div>
+      </div>
+
+      <div class="booking-details">
+        <div class="detail-item">
+          <span class="detail-label">ชื่อผู้จอง:</span>
+          <span class="detail-value">{{ booking.fullname }}</span>
+        </div>
+
+        <div class="detail-item">
+          <span class="detail-label">วันที่จอง:</span>
+          <span class="detail-value">{{ formatDate(booking.booking_date) }}</span>
+        </div>
+
+        <div class="detail-item" *ngIf="booking.email">
+          <span class="detail-label">อีเมล:</span>
+          <span class="detail-value">{{ booking.email }}</span>
+        </div>
+
+        <div class="detail-item">
+          <span class="detail-label">เบอร์โทร:</span>
+          <span class="detail-value">{{ booking.phone }}</span>
+        </div>
+
+        <div class="detail-item" *ngIf="booking.time_slot">
+          <span class="detail-label">เวลา:</span>
+          <span class="detail-value">{{ booking.time_slot }}</span>
+        </div>
+
+        <div class="detail-item" *ngIf="booking.session_type">
+          <span class="detail-label">ประเภทเซสชั่น:</span>
+          <span class="detail-value">{{ booking.session_type }}</span>
+        </div>
+
+        <div class="detail-item" *ngIf="booking.goal">
+          <span class="detail-label">เป้าหมาย:</span>
+          <span class="detail-value">{{ booking.goal }}</span>
+        </div>
+
+        <div class="detail-item" *ngIf="booking.additional">
+          <span class="detail-label">หมายเหตุ:</span>
+          <span class="detail-value">{{ booking.additional }}</span>
+        </div>
+
+        <div class="booking-actions">
+          <button 
+            class="btn btn-sm btn-edit" 
+            (click)="editBooking(booking)"
+            [disabled]="booking.status === 'cancelled' || booking.status === 'completed'">
+            แก้ไข
+          </button>
+          <button 
+            class="btn btn-sm btn-cancel" 
+            (click)="cancelBooking(booking.booking_id)"
+            [disabled]="booking.status === 'cancelled' || booking.status === 'completed'">
+            ยกเลิก
+          </button>
+          <button 
+            class="btn btn-sm btn-delete" 
+            (click)="deleteBooking(booking.booking_id)">
+            ลบ
+          </button>
+          <button 
+            *ngIf="booking.trainer_id" 
+            class="btn btn-sm btn-primary" 
+            (click)="goToTrainerDetail(booking.trainer_id)">
+            ดูข้อมูลเทรนเนอร์
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

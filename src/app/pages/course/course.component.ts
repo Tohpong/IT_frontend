@@ -40,7 +40,7 @@ export class CourseComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
 
-  private apiUrl = 'http://localhost:8000/course';
+  private apiUrl = 'https://itbackend-production.up.railway.app/course';
 
   constructor(private http: HttpClient, private router: Router) {}
 

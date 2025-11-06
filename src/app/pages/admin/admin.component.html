@@ -1,0 +1,95 @@
+<div class="admin-page container">
+  <h2>หน้าจัดการระบบ</h2>
+
+  <div class="admin-welcome">
+    <p>สวัสดี {{ currentUser?.fullName || currentUser?.username || 'ผู้ดูแลระบบ' }} — นี่คือหน้าจัดการระบบ</p>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="btn btn-ghost btn-sm" [class.active]="activeTab==='users'" (click)="setTab('users')">ผู้ใช้งาน</button>
+  <!-- คอร์ส ถูกปิดไว้ -->
+  <!-- สถิติ ถูกปิดไว้ -->
+    <button class="btn btn-ghost btn-sm" [class.active]="activeTab==='messages'" (click)="setTab('messages')">ข้อความ</button>
+  </div>
+
+  <div class="admin-section">
+    <!-- Users -->
+    <div *ngIf="activeTab==='users'">
+      <h3>ผู้ใช้งานทั้งหมด ({{ users.length }})</h3>
+      <div *ngIf="loading.users">กำลังโหลดรายการผู้ใช้งาน...</div>
+      <div style="margin:8px 0">
+        <button class="btn btn-primary btn-sm" (click)="startCreateUser()">สร้างผู้ใช้ใหม่</button>
+      </div>
+  <table *ngIf="!loading.users" class="admin-table">
+        <thead>
+          <tr><th>ID</th><th>Username</th><th>อีเมล</th><th>การกระทำ</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of users">
+            <td>{{u.id}}</td>
+            <td>{{u.username}}</td>
+            <td>{{u.email || '-'}}</td>
+            <td>
+              <button class="btn small" (click)="startEditUser(u)">แก้ไข</button>
+              <button class="btn small" (click)="removeUser(u)">ลบ</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Edit / Create user form -->
+  <div *ngIf="editingUser || newUserMode" class="card" style="margin-top:12px; padding:12px;">
+        <h4 *ngIf="editingUser">แก้ไข: {{ editingUser.username }}</h4>
+        <h4 *ngIf="newUserMode">สร้างผู้ใช้ใหม่</h4>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <input class="input-modern" placeholder="username" [(ngModel)]="userForm.username" />
+          <input class="input-modern" placeholder="email" [(ngModel)]="userForm.email" />
+          <input *ngIf="newUserMode || editingUser" class="input-modern" placeholder="password (เว้นว่างถ้าไม่เปลี่ยน)" [(ngModel)]="userForm.password" type="password" />
+        </div>
+        <div style="margin-top:8px">
+          <button class="btn btn-primary btn-sm" (click)="saveUser()">บันทึก</button>
+          <button class="btn btn-secondary btn-sm" style="margin-left:8px;" (click)="cancelUserEdit()">ยกเลิก</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Courses removed: admin now shows only users and messages -->
+
+    <!-- สถิติ ถูกเอาออกจากหน้าแอดมิน -->
+
+    <!-- Messages -->
+    <div *ngIf="activeTab==='messages'">
+      <h3>ข้อความจากผู้ใช้ ({{ messages.length }})</h3>
+      <div *ngIf="!messages.length" class="text-muted">ยังไม่มีข้อความ</div>
+      <ul class="space-y-3">
+        <li *ngFor="let m of messages" style="margin-bottom:8px;" class="card" style="padding:12px;">
+          <div class="font-medium"><strong>{{m.name}}</strong> <span class="text-sm text-muted">({{m.email}})</span> — <span class="text-sm text-muted">{{ m.created_at || m.createdAt || m.date }}</span></div>
+          <div style="margin-top:6px">{{ m.message }}</div>
+          <div style="margin-top:8px">
+            <button class="btn btn-primary btn-sm" (click)="openMessage(m)">เปิด</button>
+          </div>
+        </li>
+      </ul>
+
+      <div *ngIf="selectedMessage" class="card" style="margin-top:12px; padding:12px">
+        <h4>ข้อความจาก {{ selectedMessage.name }} &lt;{{ selectedMessage.email }}&gt;</h4>
+        <p>{{ selectedMessage.message }}</p>
+        <div *ngIf="selectedMessage.replies?.length">
+          <h5>การตอบกลับ</h5>
+          <ul>
+            <li *ngFor="let r of selectedMessage.replies">{{r.from}}: {{r.message}}</li>
+          </ul>
+        </div>
+        <div style="margin-top:8px">
+          <textarea #replyBox rows="3" style="width:100%"></textarea>
+          <div style="margin-top:8px">
+            <button class="btn" (click)="sendReply(replyBox.value); replyBox.value=''">ส่งตอบกลับ</button>
+            <button class="btn" style="background:#ccc;color:#000;margin-left:8px;" (click)="selectedMessage=null">ปิด</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+</div>

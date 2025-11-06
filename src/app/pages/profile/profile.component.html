@@ -5,9 +5,13 @@
       <button class="btn btn-secondary" (click)="goToWorkoutHistory()">
         ประวัติการออกกำลังกาย
       </button>
+      <button class="btn btn-secondary" (click)="goToBookingHistory()">
+        ประวัติการจองเทรนเนอร์
+      </button>
       <button class="btn btn-secondary" (click)="goToRegistrationHistory()">
         ประวัติการสมัคร
       </button>
+        <!-- เทรนเนอร์ของฉัน ถูกเอาออก -->
       <button class="btn btn-danger" (click)="logout()">
         ออกจากระบบ
       </button>
@@ -27,16 +31,7 @@
       <!-- View Mode -->
       <div *ngIf="!isEditing && memberData" class="profile-view">
 
-        <div class="profile-avatar">
-          <div *ngIf="profileImage; else noImage">
-            <img [src]="profileImage" alt="Profile" class="avatar-img">
-          </div>
-          <ng-template #noImage>
-            <div class="avatar-circle">
-              {{ memberData.full_name?.charAt(0)?.toUpperCase() }}
-            </div>
-          </ng-template>
-        </div>
+        <!-- Avatar removed as requested -->
 
 
         <div class="profile-info">
@@ -76,11 +71,57 @@
           </div>
         </div>
 
+        <!-- Messages list + chat view -->
+        <div class="messages-area">
+          <div class="messages-list">
+            <h4>ข้อความจากแอดมิน</h4>
+            <div *ngIf="!messages?.length" class="empty">ไม่มีข้อความ</div>
+            <div *ngFor="let msg of messages" class="msg-list-item" (click)="openConversation(msg)">
+              <div class="msg-summary">
+                <div class="msg-name">จาก: {{ msg.from }}</div>
+                <div class="msg-time">{{ formatDate(msg.created_at) }}</div>
+              </div>
+              <div class="msg-snippet">{{ msg.message | slice:0:80 }}{{ msg.message?.length > 80 ? '...' : '' }}</div>
+              <div class="msg-parent">เกี่ยวกับ: {{ msg.parentName }}</div>
+            </div>
+          </div>
+
+          <div class="chat-panel" *ngIf="selectedMessage">
+            <div class="chat-header">
+              <div>
+                <strong>{{ selectedMessage.name }}</strong>
+                <div class="small muted">{{ selectedMessage.email }}</div>
+              </div>
+              <div class="chat-meta">{{ formatDate(selectedMessage.created_at) }}</div>
+            </div>
+
+            <div class="chat-body" #chatScroll>
+              <!-- original user message -->
+              <div class="bubble left">
+                <div class="bubble-text">{{ selectedMessage.message }}</div>
+                <div class="bubble-meta">ผู้ส่ง • {{ formatDate(selectedMessage.created_at) }}</div>
+              </div>
+
+              <!-- replies -->
+              <div *ngFor="let r of selectedMessage.replies" [ngClass]="{'bubble left': r.from !== (currentUser && currentUser.username), 'bubble right': r.from === (currentUser && currentUser.username)}">
+                <div class="bubble-text">{{ r.message }}</div>
+                <div class="bubble-meta">{{ r.from }} • {{ formatDate(r.created_at) }}</div>
+              </div>
+            </div>
+
+            <div class="chat-input">
+              <input type="text" [(ngModel)]="replyText" placeholder="พิมพ์ข้อความของคุณ..." class="form-control" (keyup.enter)="sendUserReply()" />
+              <button class="btn btn-primary" (click)="sendUserReply()">ส่ง</button>
+            </div>
+          </div>
+        </div>
+
         <div class="profile-actions">
           <button class="btn btn-primary" (click)="toggleEdit()">
             แก้ไขโปรไฟล์
           </button>
         </div>
+        <!-- My Trainers panel removed -->
       </div>
 
       <!-- Edit Mode -->

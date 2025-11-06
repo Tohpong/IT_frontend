@@ -2,9 +2,8 @@
   <div class="header">
     <h2>ประวัติการสมัครเรียน</h2>
     <div class="header-actions">
-      <button class="btn btn-primary" (click)="toggleAddForm()">
-        <span *ngIf="!showAddForm">+ สมัครคอร์สใหม่</span>
-        <span *ngIf="showAddForm">ยกเลิก</span>
+      <button class="btn btn-primary" (click)="goToCourses()">
+        + สมัครคอร์สใหม่
       </button>
       <button class="btn btn-secondary" (click)="goBack()">
         กลับ
@@ -119,73 +118,95 @@
     <div *ngFor="let year of getYearKeys()" class="year-section">
       <h3 class="year-title">ปี {{ year }}</h3>
       <div class="registration-grid">
-        <div
-          *ngFor="let registration of getRegistrationsByYear()[year]"
-          class="registration-card"
-        >
+        <div *ngFor="let registration of getRegistrationsByYear()[year]" class="registration-card">
           <div class="registration-header">
-            <div class="course-name">{{ registration.courseName }}</div>
-            <div 
-              class="status-badge" 
+            <div class="course-name">{{ registration.course_name || registration.courseName }}</div>
+            <div
+              class="status-badge"
               [style.background-color]="getStatusColor(registration.status)"
             >
               {{ getStatusLabel(registration.status) }}
             </div>
           </div>
-          
+
           <div class="registration-details">
-            <div class="detail-item" *ngIf="registration.studentName">
+            <div class="detail-item">
               <span class="detail-label">ชื่อผู้สมัคร:</span>
-              <span class="detail-value">{{ registration.studentName }}</span>
+              <span class="detail-value">
+                {{ registration.full_name || registration.studentName }}
+              </span>
             </div>
+
             <div class="detail-item">
               <span class="detail-label">วันที่สมัคร:</span>
-              <span class="detail-value">{{ formatDate(registration.registrationDate) }}</span>
+              <span class="detail-value">
+                {{
+                  registration.enrollment_date
+                    ? formatDate(registration.enrollment_date)
+                    : formatDate(registration.registrationDate)
+                }}
+              </span>
             </div>
+
             <div class="detail-item">
-              <span class="detail-label">ราคา:</span>
-              <span class="detail-value">{{ registration.price | number }} บาท</span>
-            </div>
-            <div class="detail-item" *ngIf="registration.email">
               <span class="detail-label">อีเมล:</span>
-              <span class="detail-value">{{ registration.email }}</span>
+              <span class="detail-value">
+                {{ registration.email || registration.studentEmail }}
+              </span>
             </div>
-            <div class="detail-item" *ngIf="registration.phone">
+
+            <div class="detail-item">
               <span class="detail-label">เบอร์โทร:</span>
-              <span class="detail-value">{{ registration.phone }}</span>
+              <span class="detail-value">
+                {{ registration.phone || registration.studentPhone }}
+              </span>
             </div>
-            <div class="detail-item" *ngIf="registration.paymentMethod">
-              <span class="detail-label">วิธีชำระเงิน:</span>
-              <span class="detail-value">{{ registration.paymentMethod }}</span>
-            </div>
+
             <div class="detail-item">
               <span class="detail-label">รหัสคอร์ส:</span>
-              <span class="detail-value">#{{ registration.courseId.toString().padStart(4, '0') }}</span>
+              <span class="detail-value">
+                #{{ registration.course_id || registration.courseId }}
+              </span>
             </div>
-          </div>
 
-          <div class="registration-footer">
-            <div class="registration-id">
-              รหัสการสมัคร: #{{ registration.id.toString().padStart(6, '0') }}
+            <div class="detail-item">
+              <span class="detail-label">ราคา:</span>
+              <span class="detail-value">
+                {{ registration.price | number }} บาท
+              </span>
             </div>
+
             <div class="registration-actions">
-              <button 
+              <!-- ปุ่มยกเลิก -->
+              <button
                 *ngIf="registration.status === 'active'"
                 class="btn btn-warning btn-sm"
-                (click)="cancelRegistration(registration.id)"
-                [disabled]="isCancelling"
+                (click)="cancelRegistration(registration.enrollment_id || registration.id)"
+                [disabled]="cancellingId === (registration.enrollment_id || registration.id)"
               >
-                <span *ngIf="!isCancelling">ยกเลิกการสมัคร</span>
-                <span *ngIf="isCancelling">กำลังยกเลิก...</span>
+                <span *ngIf="cancellingId !== (registration.enrollment_id || registration.id)">
+                  ยกเลิกสมัครเรียน
+                </span>
+                <span *ngIf="cancellingId === (registration.enrollment_id || registration.id)">
+                  กำลังยกเลิก...
+                </span>
               </button>
-              <button 
+
+              <!-- ปุ่มลบ -->
+              <button
+                *ngIf="registration.status === 'cancelled'"
                 class="btn btn-danger btn-sm"
-                (click)="deleteRegistration(registration.id)"
-                [disabled]="isDeleting"
+                (click)="deleteRegistration(registration.enrollment_id || registration.id)"
+                [disabled]="deletingId === (registration.enrollment_id || registration.id)"
               >
-                <span *ngIf="!isDeleting">ลบการสมัคร</span>
-                <span *ngIf="isDeleting">กำลังลบ...</span>
+                <span *ngIf="deletingId !== (registration.enrollment_id || registration.id)">
+                  ลบการสมัคร
+                </span>
+                <span *ngIf="deletingId === (registration.enrollment_id || registration.id)">
+                  กำลังลบ...
+                </span>
               </button>
+
             </div>
           </div>
         </div>

@@ -3,18 +3,19 @@
     <h2>เทรนเนอร์ของเรา</h2>
     <p class="subtitle">พบกับทีมเทรนเนอร์มืออาชีพที่พร้อมช่วยให้คุณบรรลุเป้าหมาย</p>
   </div>
-  
+
   <div class="trainers-grid">
     <div class="trainer-card" *ngFor="let trainer of trainers">
       <div class="trainer-image">
         <img [src]="trainer.image" [alt]="trainer.name" onerror="this.src=''">
       </div>
-      
+
       <div class="trainer-content">
         <h3>{{ trainer.name }}</h3>
         <div class="specialty">{{ trainer.specialty }} Specialist</div>
         <p class="experience">ประสบการณ์: {{ trainer.experience }} ปี</p>
-        
+        <p class="age">อายุ: {{ trainer.age }} ปี</p>
+
         <div class="rating">
           <span class="stars">
             <span *ngFor="let star of getStarRating(trainer.rating)" 
@@ -22,9 +23,9 @@
           </span>
           <span class="rating-text">{{ trainer.rating }}/5</span>
         </div>
-        
+
         <div class="bio-preview">{{ trainer.bio | slice:0:100 }}...</div>
-        
+
         <div class="trainer-actions">
           <button (click)="viewTrainerDetail(trainer.id)" class="btn-detail">
             ดูรายละเอียด

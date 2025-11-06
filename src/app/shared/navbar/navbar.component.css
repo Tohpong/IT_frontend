@@ -170,19 +170,7 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-.profile-avatar {
-  width: 32px;
-  height: 32px;
-  background: #dc2626;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-}
+/* avatar removed: previously used a colored circle with initial */
 
 .profile-name {
   color: white;

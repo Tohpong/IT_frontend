@@ -28,18 +28,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.authSubscription.unsubscribe();
   }
 
-  setDemoUser(): void {
-    const demoUser = {
-      id: 1,
-      username: 'admin',
-      email: 'admin@example.com',
-      fullName: 'สมชาย ใจดี',
-      phone: '0123456789',
-      registrationDate: new Date()
-    };
-    localStorage.setItem('currentUser', JSON.stringify(demoUser));
-    this.checkLoginStatus();
-  }
+  // Demo helper removed — rely on backend authentication and role
 
   checkLoginStatus(): void {
     // สำหรับตัวอย่าง - ในการใช้งานจริงควรเช็คจาก service หรือ localStorage
@@ -53,6 +42,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   toggleProfileDropdown(): void {
     this.showProfileDropdown = !this.showProfileDropdown;
   }
+
 
   goToProfile(): void {
     this.router.navigate(['/profile']);

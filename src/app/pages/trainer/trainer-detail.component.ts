@@ -1,24 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { BookingService, BookingRequest } from '../../services/booking.service';
 
 interface Trainer {
   id: number;
-  name: string;
-  specialty: string;
-  experience: number;
-  age: number;
-  certification: string[];
-  bio: string;
-  image: string;
-  achievements: string[];
-  schedule: string[];
-  rating: number;
-  reviewCount: number;
-  contactInfo: {
-    email: string;
-    phone: string;
-  };
+  name: string;        // trainer_fullname
+  specialty: string;   // course_name
+  experience: number;  // trainer_year
+  age: number;         // trainer_age
+  bio: string;         // trainer_bio
+  image: string;       // trainer_url
+  schedule: string;    // schedule
+  rating: number;      // rating
+  email: string;       // trainer_email
+  phone: string;       // trainer_phone
 }
 
 @Component({
@@ -30,11 +27,13 @@ export class TrainerDetailComponent implements OnInit {
   trainer: Trainer | null = null;
   showBookingModal = false;
   bookingForm: FormGroup;
-  
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private http: HttpClient,
+    private bookingService: BookingService
   ) {
     this.bookingForm = this.formBuilder.group({
       fullName: ['', [Validators.required, Validators.minLength(2)]],
@@ -47,108 +46,52 @@ export class TrainerDetailComponent implements OnInit {
       notes: ['']
     });
   }
-  
-  // ข้อมูล trainers เดียวกับใน trainer.component.ts
-  trainers: Trainer[] = [
-    { 
-      id: 1,
-      name: 'Pranthep Roongpromma', 
-      specialty: 'Weight Training', 
-      experience: 5,
-      age: 28,
-      certification: ['NASM-CPT', 'CSCS', 'Precision Nutrition Level 1'],
-      bio: 'Pranthep Roongpromma เป็นเทรนเนอร์ด้านการยกน้ำหนักที่มีประสบการณ์กว่า 5 ปี เชี่ยวชาญในการสร้างกล้ามเนื้อและการเพิ่มความแข็งแรง มีความเชี่ยวชาญในการออกแบบโปรแกรมการออกกำลังกายที่เหมาะสมกับแต่ละคน Pranthep เริ่มต้นการทำงานในวงการฟิตเนสตั้งแต่ปี 2019 และได้รับการรับรองจากหลายสถาบันชั้นนำ',
-      image: 'https://bestkru-thumbs.s3-ap-southeast-1.amazonaws.com/112772',
-      achievements: [
-        'เหรียญทองการแข่งขันเพาะกาย 2022',
-        'Best Trainer Award 2023',
-        'ช่วยลูกค้ากว่า 200 คนบรรลุเป้าหมาย',
-        'Transformation Coach of the Year 2023'
-      ],
-      schedule: ['จันทร์-ศุกร์ 6:00-20:00', 'เสาร์-อาทิตย์ 8:00-18:00'],
-      rating: 4.8,
-      reviewCount: 150,
-      contactInfo: {
-        email: 'john.smith@fitness.com',
-        phone: '02-123-4567'
-      }
-    },
-    { 
-      id: 2,
-      name: 'Kru ZomO', 
-      specialty: 'Yoga', 
-      experience: 3,
-      age: 25,
-      certification: ['RYT-200', 'Yin Yoga Certificate', 'Meditation Instructor'],
-      bio: 'Kru ZomO เป็นครูโยคะที่มีความเชี่ยวชาญในการสอนโยคะทุกระดับ จากผู้เริ่มต้นจนถึงระดับขั้นสูง มีความเชี่ยวชาญพิเศษในด้าน Vinyasa Flow และ Yin Yoga Kru ZomO เชื่อในพลังของโยคะที่สามารถเปลี่ยนแปลงชีวิตทั้งร่างกายและจิตใจ',
-      image: 'https://bestkru-thumbs.s3-ap-southeast-1.amazonaws.com/97443',
-      achievements: [
-        'Certified Yoga Alliance 500 Hours', 
-        'Mindfulness Training Certificate',
-        'สอนโยคะมากว่า 1,000 ชั่วโมง',
-        'Yoga Teacher of the Month 2023'
-      ],
-      schedule: ['จันทร์-ศุกร์ 7:00-19:00', 'เสาร์-อาทิตย์ 9:00-17:00'],
-      rating: 4.9,
-      reviewCount: 98,
-      contactInfo: {
-        email: 'jane.doe@fitness.com',
-        phone: '02-234-5678'
-      }
-    },
-    { 
-      id: 3,
-      name: 'Kru ae', 
-      specialty: 'Cardio', 
-      experience: 7,
-      age: 32,
-      certification: ['ACSM-CPT', 'Spinning Instructor', 'HIIT Specialist'],
-      bio: 'Kru ae เป็นผู้เชี่ยวชาญด้านการออกกำลังกายแบบคาร์ดิโอ มีประสบการณ์ในการสอน HIIT และ Spinning Kru ae เป็นนักกีฬาระดับแนวหน้าที่หันมาเป็นเทรนเนอร์ เพื่อแบ่งปันความรู้และประสบการณ์ให้กับผู้ที่ต้องการปรับปรุงสุขภาพ',
-      image: 'https://bestkru-thumbs.s3-ap-southeast-1.amazonaws.com/203647',
-      achievements: [
-        'Marathon Finisher 2021, 2022, 2023',
-        'Triathlon Bronze Medal 2022',
-        'ผู้ก่อตั้งโปรแกรม HIIT ยอดนิยม',
-        'Cardio Specialist Award 2023'
-      ],
-      schedule: ['จันทร์-ศุกร์ 5:30-21:00', 'เสาร์-อาทิตย์ 7:00-19:00'],
-      rating: 4.7,
-      reviewCount: 203,
-      contactInfo: {
-        email: 'mike.johnson@fitness.com',
-        phone: '02-345-6789'
-      }
-    }
-  ];
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.trainer = this.trainers.find(t => t.id === id) || null;
-    
-    if (!this.trainer) {
-      this.router.navigate(['/trainer']);
-    }
+    this.loadTrainerDetail(id);
   }
 
+  /** ✅ ดึงข้อมูลเทรนเนอร์จาก backend */
+  loadTrainerDetail(id: number): void {
+    this.http.get<any>(`https://itbackend-production.up.railway.app/trainer/${id}`).subscribe({
+      next: (t) => {
+        this.trainer = {
+          id: t.trainer_id,
+          name: t.trainer_fullname,
+          specialty: t.course_name || 'ไม่ระบุ',   // ✅ ดึงชื่อคอร์สจาก backend
+          experience: Number(t.trainer_year),
+          age: t.trainer_age,
+          bio: t.trainer_bio,
+          image: t.trainer_url,
+          schedule: t.schedule,
+          rating: t.rating,
+          email: t.trainer_email || 'ไม่ระบุ',
+          phone: t.trainer_phone || 'ไม่ระบุ'
+        };
+
+      },
+      error: (err) => {
+        console.error('ไม่สามารถโหลดข้อมูลเทรนเนอร์ได้:', err);
+        this.router.navigate(['/trainer']);
+      }
+    });
+  }
+
+  /** ✅ เพิ่มฟังก์ชันนี้เพื่อกลับไปหน้า trainer */
   goBack(): void {
     this.router.navigate(['/trainer']);
   }
 
   getStarRating(rating: number): string[] {
-    const stars = [];
+    const stars: string[] = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
-    
     for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.push('★');
-      } else if (i === fullStars && hasHalfStar) {
-        stars.push('☆');
-      } else {
-        stars.push('☆');
-      }
+      if (i < fullStars) stars.push('★');
+      else if (i === fullStars && hasHalfStar) stars.push('☆');
+      else stars.push('☆');
     }
-    
     return stars;
   }
 
@@ -163,22 +106,39 @@ export class TrainerDetailComponent implements OnInit {
 
   onSubmitBooking(): void {
     if (this.bookingForm.valid && this.trainer) {
-      const bookingData = {
-        trainerId: this.trainer.id,
-        trainerName: this.trainer.name,
-        trainerSpecialty: this.trainer.specialty,
-        ...this.bookingForm.value,
-        bookingDate: new Date().toISOString(),
-        status: 'pending'
+      // แปลงข้อมูลจากฟอร์มเป็นรูปแบบที่ API ต้องการ
+      const formValue = this.bookingForm.value;
+      
+      // รวมวันที่และเวลาเป็น ISO string
+      const bookingDateTime = new Date(`${formValue.sessionDate}T${formValue.sessionTime || '00:00'}:00`);
+      
+      const bookingData: BookingRequest = {
+        fullname: formValue.fullName,
+        email: formValue.email,
+        phone: formValue.phone,
+        booking_date: bookingDateTime.toISOString(),
+        time_slot: formValue.sessionTime,
+        session_type: formValue.sessionType,
+        goal: formValue.goals,
+        additional: formValue.notes,
+        trainer_id: this.trainer.id
       };
 
-      // บันทึกข้อมูลการจองใน localStorage
-      const existingBookings = JSON.parse(localStorage.getItem('trainerBookings') || '[]');
-      existingBookings.push(bookingData);
-      localStorage.setItem('trainerBookings', JSON.stringify(existingBookings));
-
-      alert(`จองเซสชั่นกับ ${this.trainer.name} เรียบร้อยแล้ว!\nเราจะติดต่อกลับภายใน 24 ชั่วโมง`);
-      this.closeBookingModal();
+      // ส่งข้อมูลไป backend
+      this.bookingService.createBooking(bookingData).subscribe({
+        next: (response) => {
+          console.log('✅ จองสำเร็จ:', response);
+          this.closeBookingModal();
+          // แสดง confirmation dialog แล้ว redirect ไปหน้าประวัติการจอง
+          if (confirm(`จองเซสชั่นกับ ${this.trainer!.name} เรียบร้อยแล้ว!\nหมายเลขการจอง: ${response.booking_id}\nเราจะติดต่อกลับภายใน 24 ชั่วโมง\n\nคุณต้องการดูประวัติการจองหรือไม่?`)) {
+            this.router.navigate(['/booking-history']);
+          }
+        },
+        error: (error) => {
+          console.error('❌ เกิดข้อผิดพลาดในการจอง:', error);
+          alert(`ไม่สามารถจองได้ในขณะนี้\nกรุณาลองใหม่อีกครั้ง\nError: ${error.error?.error || error.message}`);
+        }
+      });
     } else {
       alert('กรุณากรอกข้อมูลให้ครบถ้วน');
     }
@@ -197,7 +157,7 @@ export class TrainerDetailComponent implements OnInit {
 
   contactTrainer(): void {
     if (this.trainer) {
-      alert(`ติดต่อ ${this.trainer.name}\nEmail: ${this.trainer.contactInfo.email}\nPhone: ${this.trainer.contactInfo.phone}`);
+      alert(`ติดต่อ ${this.trainer.name}\nEmail: ${this.trainer.email}\nPhone: ${this.trainer.phone}`);
     }
   }
 }

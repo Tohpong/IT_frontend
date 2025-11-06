@@ -340,3 +340,7 @@ input[type="reset"]:hover:not(:disabled) {
   white-space: nowrap;
   border: 0;
 }
+
+/* Global override: remove all border-radius across the app */
+* { border-radius: 0 !important; }
+

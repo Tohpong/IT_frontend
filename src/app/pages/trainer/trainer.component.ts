@@ -1,23 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 interface Trainer {
   id: number;
-  name: string;
-  specialty: string;
-  experience: number;
-  age: number;
-  certification: string[];
-  bio: string;
-  image: string;
-  achievements: string[];
-  schedule: string[];
-  rating: number;
-  reviewCount: number;
-  contactInfo: {
-    email: string;
-    phone: string;
-  };
+  name: string;        // trainer_fullname
+  specialty: string;   // course_name (จาก Course)
+  experience: number;  // trainer_year
+  age: number;         // trainer_age
+  bio: string;         // trainer_bio
+  image: string;       // trainer_url
+  schedule: string;    // schedule
+  rating: number;      // rating
+  email: string;       // trainer_email
+  phone: string;       // trainer_phone
 }
 
 @Component({
@@ -26,100 +22,50 @@ interface Trainer {
   styleUrls: ['./trainer.component.css']
 })
 export class TrainerComponent implements OnInit {
-  trainers: Trainer[] = [
-    { 
-      id: 1,
-      name: 'Pranthep Roongpromma', 
-      specialty: 'Weight Training', 
-      experience: 5,
-      age: 28,
-      certification: ['NASM-CPT', 'CSCS', 'Precision Nutrition Level 1'],
-      bio: 'Pranthep Roongpromma เป็นเทรนเนอร์ด้านการยกน้ำหนักที่มีประสบการณ์กว่า 5 ปี เชี่ยวชาญในการสร้างกล้ามเนื้อและการเพิ่มความแข็งแรง',
-      image: 'https://bestkru-thumbs.s3-ap-southeast-1.amazonaws.com/112772',
-      achievements: [
-        'เหรียญทองการแข่งขันเพาะกาย 2022',
-        'Best Trainer Award 2023',
-        'ช่วยลูกค้ากว่า 200 คนบรรลุเป้าหมาย'
-      ],
-      schedule: ['จันทร์-ศุกร์ 6:00-20:00', 'เสาร์-อาทิตย์ 8:00-18:00'],
-      rating: 4.8,
-      reviewCount: 150,
-      contactInfo: {
-        email: 'pranthep.roongpromma@fitness.com',
-        phone: '02-123-4567'
-      }
-    },
-    { 
-      id: 2,
-      name: 'Kru ZomO', 
-      specialty: 'Yoga', 
-      experience: 3,
-      age: 25,
-      certification: ['RYT-200', 'Yin Yoga Certificate', 'Meditation Instructor'],
-      bio: 'Kru ZomO เป็นครูโยคะที่มีความเชี่ยวชาญในการสอนโยคะทุกระดับ จากผู้เริ่มต้นจนถึงระดับขั้นสูง',
-      image: 'https://bestkru-thumbs.s3-ap-southeast-1.amazonaws.com/97443',
-      achievements: [
-        'Certified Yoga Alliance 500 Hours',
-        'Mindfulness Training Certificate',
-        'สอนโยคะมากว่า 1,000 ชั่วโมง'
-      ],
-      schedule: ['จันทร์-ศุกร์ 7:00-19:00', 'เสาร์-อาทิตย์ 9:00-17:00'],
-      rating: 4.9,
-      reviewCount: 98,
-      contactInfo: {
-        email: 'jane.doe@fitness.com',
-        phone: '02-234-5678'
-      }
-    },
-    { 
-      id: 3,
-      name: 'Kru ae', 
-      specialty: 'Cardio', 
-      experience: 7,
-      age: 32,
-      certification: ['ACSM-CPT', 'Spinning Instructor', 'HIIT Specialist'],
-      bio: 'Kru ae เป็นผู้เชี่ยวชาญด้านการออกกำลังกายแบบคาร์ดิโอ มีประสบการณ์ในการสอน HIIT และ Spinning Kru ae เป็นนักกีฬาระดับแนวหน้าที่หันมาเป็นเทรนเนอร์ เพื่อแบ่งปันความรู้และประสบการณ์ให้กับผู้ที่ต้องการปรับปรุงสุขภาพ',
-      image: 'https://bestkru-thumbs.s3-ap-southeast-1.amazonaws.com/203647',
-      achievements: [
-        'Marathon Finisher 2021, 2022, 2023',
-        'Triathlon Bronze Medal 2022',
-        'ผู้ก่อตั้งโปรแกรม HIIT ยอดนิยม'
-      ],
-      schedule: ['จันทร์-ศุกร์ 5:30-21:00', 'เสาร์-อาทิตย์ 7:00-19:00'],
-      rating: 4.7,
-      reviewCount: 203,
-      contactInfo: {
-        email: 'mike.johnson@fitness.com',
-        phone: '02-345-6789'
-      }
-    }
-  ];
+  trainers: Trainer[] = [];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private http: HttpClient) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadTrainers();
+  }
+
+  /** โหลดข้อมูล Trainer ทั้งหมดจาก backend */
+  loadTrainers(): void {
+    this.http.get<any[]>('https://itbackend-production.up.railway.app/trainer').subscribe({
+      next: (data) => {
+        this.trainers = data.map(t => ({
+          id: t.trainer_id,
+          name: t.trainer_fullname,
+          specialty: t.course_name,
+          experience: Number(t.trainer_year),
+          age: t.trainer_age,
+          bio: t.trainer_bio,
+          image: t.trainer_url,
+          schedule: t.schedule,
+          rating: t.rating,
+          email: t.trainer_email,
+          phone: t.trainer_phone
+        }));
+      },
+      error: (err) => {
+        console.error('โหลดข้อมูลเทรนเนอร์ไม่สำเร็จ:', err);
+      }
+    });
+  }
 
   viewTrainerDetail(trainerId: number): void {
     this.router.navigate(['/trainer', trainerId]);
   }
 
+  /** ฟังก์ชันสร้างดาวคะแนน */
   getStarRating(rating: number): string[] {
-    const stars = [];
+    const stars: string[] = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
-    
-    for (let i = 0; i < fullStars; i++) {
-      stars.push('★');
-    }
-    
-    if (hasHalfStar) {
-      stars.push('☆');
-    }
-    
-    while (stars.length < 5) {
-      stars.push('☆');
-    }
-    
+    for (let i = 0; i < fullStars; i++) stars.push('★');
+    if (hasHalfStar) stars.push('☆');
+    while (stars.length < 5) stars.push('☆');
     return stars;
   }
 }

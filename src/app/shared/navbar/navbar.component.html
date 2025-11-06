@@ -7,26 +7,19 @@
     <div class="nav-menu">
       <a routerLink="/home" class="nav-item" routerLinkActive="active">หน้าหลัก</a>
       <a routerLink="/course" class="nav-item" routerLinkActive="active">คอร์ส</a>
-      <a routerLink="/service" class="nav-item" routerLinkActive="active">การเรียน</a>
       <a routerLink="/trainer" class="nav-item" routerLinkActive="active">เทรนเนอร์</a>
       <a routerLink="/contact" class="nav-item" routerLinkActive="active">ติดต่อ</a>
+  <a *ngIf="isLoggedIn && currentUser?.role === 'admin'" routerLink="/admin" class="nav-item" routerLinkActive="active">แอดมิน</a>
     </div>
-    <div class="nav-actions">
-      <div class="search-box">
-        <input type="text" placeholder="ค้นหา..." class="search-input">
-        <button class="search-btn">🔍</button>
-      </div>
+    
       
-      <!-- Login Button (แสดงเมื่อยังไม่ login) -->
-      <button *ngIf="!isLoggedIn" class="login-btn" routerLink="/login">เข้าสู่ระบบ</button>
+  <!-- Login Button (แสดงเมื่อยังไม่ login) -->
+  <button *ngIf="!isLoggedIn" class="login-btn" routerLink="/login">เข้าสู่ระบบ</button>
       
       <!-- Mini Profile (แสดงเมื่อ login แล้ว) -->
       <div *ngIf="isLoggedIn" class="profile-dropdown">
         <div class="profile-trigger" (click)="toggleProfileDropdown()">
-          <div class="profile-avatar">
-            {{ currentUser?.fullName?.charAt(0) || 'U' }}
-          </div>
-          <span class="profile-name">{{ currentUser?.fullName || 'ผู้ใช้' }}</span>
+          <span class="profile-name">{{ currentUser?.username || 'ผู้ใช้' }}</span>
           <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="6,9 12,15 18,9"></polyline>
           </svg>
@@ -40,6 +33,7 @@
             </svg>
             โปรไฟล์
           </div>
+          <!-- My Trainers removed from dropdown -->
           <div class="dropdown-item" routerLink="/workout-history">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -59,6 +53,13 @@
             </svg>
             ประวัติการลงทะเบียน
           </div>
+          <div class="dropdown-item" routerLink="/booking-history">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
+            ประวัติการจองเทรนเนอร์
+          </div>
           <div class="dropdown-divider"></div>
           <div class="dropdown-item logout" (click)="logout()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -71,5 +72,4 @@
         </div>
       </div>
     </div>
-  </div>
 </nav>

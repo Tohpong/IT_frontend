@@ -7,6 +7,8 @@ import { AuthService, RegistrationHistory, User } from '../../services/auth.serv
   templateUrl: './registration-history.component.html',
   styleUrls: ['./registration-history.component.css']
 })
+
+
 export class RegistrationHistoryComponent implements OnInit {
   currentUser: User | null = null;
   registrationHistory: RegistrationHistory[] = [];
@@ -20,15 +22,18 @@ export class RegistrationHistoryComponent implements OnInit {
     status: 'active' as 'active' | 'completed' | 'cancelled'
   };
 
+  // เพิ่มใน class
+  cancellingId: number | null = null;
+  deletingId: number | null = null;
+
+
   availableCourses = [
-    { id: 1, name: 'โยคะเบื้องต้น', price: 1500 },
-    { id: 2, name: 'พิลาทิส', price: 2000 },
-    { id: 3, name: 'การออกกำลังกายด้วยน้ำหนัก', price: 2500 },
-    { id: 4, name: 'แอโรบิก', price: 1800 },
-    { id: 5, name: 'การฝึกกล้ามเนื้อ', price: 3000 },
-    { id: 6, name: 'ว่ายน้ำ', price: 2200 },
-    { id: 7, name: 'มวยไทย', price: 2800 },
-    { id: 8, name: 'ฟิตเนสแบบครบวงจร', price: 3500 }
+    { id: 2, name: 'Yoga & Flexibility', price: 2000 },
+    { id: 3, name: 'Basic Fitness Training', price: 1500 },
+    { id: 4, name: 'Cardio Workout', price: 1200 },
+    { id: 5, name: 'Strength Training', price: 2000 },
+    { id: 6, name: 'HIIT Training', price: 1800 },
+    { id: 7, name: 'Functional Training', price: 1700 }
   ];
 
   statusOptions = [
@@ -43,60 +48,41 @@ export class RegistrationHistoryComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-  this.currentUser = this.authService.getCurrentUser();
-  if (!this.currentUser) {
-    this.router.navigate(['/login']);
-    return;
+    this.currentUser = this.authService.getCurrentUser();
+    if (!this.currentUser) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.loadRegistrationHistory();
   }
-  this.loadRegistrationHistory();
-}
 
-loadRegistrationHistory(): void {
-  const localHistory = JSON.parse(localStorage.getItem('registrationHistory') || '[]');
-  this.registrationHistory = localHistory.sort(
-    (a: any, b: any) => new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime()
-  );
-  this.isLoading = false;
-}
-
-/*
+  /** ✅ โหลดข้อมูลจาก backend (รวมข้อมูล Member, Course, Enrollment) */
   loadRegistrationHistory(): void {
-    if (!this.currentUser) return;
-
-    // Load from localStorage for now (in real app, get from backend)
-    const localHistory = JSON.parse(localStorage.getItem('registrationHistory') || '[]');
-    
-    this.authService.getRegistrationHistory(this.currentUser.id).subscribe({
-      next: (history) => {
-        // Combine auth service history with local storage history
-        const combinedHistory = [...history, ...localHistory];
-        this.registrationHistory = combinedHistory.sort((a, b) => 
-          new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime()
-        );
+    this.isLoading = true;
+    this.authService.getRegistrationHistory(this.currentUser!.member_id!).subscribe({
+      next: (data) => {
+        // ✅ คาดว่า backend จะส่งข้อมูลรวม เช่น full_name, email, phone, course_id, courseName, enrollment_date
+        this.registrationHistory = data.sort((a, b) => {
+          const dateA: any = new Date((a as any).enrollment_date || a.registrationDate);
+          const dateB: any = new Date((b as any).enrollment_date || b.registrationDate);
+          return dateB - dateA;
+        });
         this.isLoading = false;
       },
-      error: () => {
-        // If auth service fails, just use localStorage
-        this.registrationHistory = localHistory.sort((a: any, b: any) => 
-          new Date(b.registrationDate).getTime() - new Date(a.registrationDate).getTime()
-        );
+      error: (err) => {
+        console.error('Load registration history error:', err);
         this.isLoading = false;
+        this.errorMessage = 'โหลดข้อมูลไม่สำเร็จ';
       }
     });
   }
-*/
 
   toggleAddForm(): void {
     this.showAddForm = !this.showAddForm;
-    if (!this.showAddForm) {
-      this.resetForm();
-    }
+    if (!this.showAddForm) this.resetForm();
     this.successMessage = '';
     this.errorMessage = '';
   }
@@ -111,13 +97,14 @@ loadRegistrationHistory(): void {
   }
 
   onCourseChange(): void {
-    const selectedCourse = this.availableCourses.find(c => c.id === +this.newRegistration.courseId);
-    if (selectedCourse) {
-      this.newRegistration.courseName = selectedCourse.name;
-      this.newRegistration.price = selectedCourse.price;
+    const selected = this.availableCourses.find(c => c.id === +this.newRegistration.courseId);
+    if (selected) {
+      this.newRegistration.courseName = selected.name;
+      this.newRegistration.price = selected.price;
     }
   }
 
+  /** ✅ สมัครคอร์สใหม่ */
   addRegistration(): void {
     if (!this.currentUser || !this.newRegistration.courseId) {
       this.errorMessage = 'กรุณาเลือกคอร์สเรียน';
@@ -128,51 +115,100 @@ loadRegistrationHistory(): void {
     this.successMessage = '';
     this.errorMessage = '';
 
-    const registrationData = {
-      userId: this.currentUser.id,
-      courseId: this.newRegistration.courseId,
-      courseName: this.newRegistration.courseName,
-      registrationDate: new Date(),
-      status: this.newRegistration.status,
-      price: this.newRegistration.price
+    const payload = {
+      member_id: this.currentUser.member_id || this.currentUser.id,
+      course_id: this.newRegistration.courseId,
+      experience: 'beginner',
+      goals: 'เพิ่มสมรรถภาพ',
+      medical_conditions: '',
+      payment_method: 'promptpay',
+      price: this.newRegistration.price,
+      enrollment_date: new Date().toISOString()
     };
 
-    this.authService.addRegistration(registrationData).subscribe({
-      next: (success) => {
+    this.authService.addRegistration(payload).subscribe({
+      next: () => {
         this.isAddingRegistration = false;
-        if (success) {
-          this.successMessage = 'บันทึกการสมัครเรียบร้อยแล้ว';
-          this.resetForm();
-          this.showAddForm = false;
-          this.loadRegistrationHistory();
-          setTimeout(() => this.successMessage = '', 3000);
-        } else {
-          this.errorMessage = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
-        }
+        this.successMessage = 'สมัครคอร์สเรียบร้อยแล้ว';
+        this.showAddForm = false;
+
+        /** ✅ โหลดข้อมูลใหม่ทั้งหมดทันที */
+        this.loadRegistrationHistory();
+
+        setTimeout(() => (this.successMessage = ''), 3000);
       },
-      error: () => {
+      error: (err) => {
         this.isAddingRegistration = false;
+        console.error(err);
         this.errorMessage = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
       }
     });
   }
 
-  goBack(): void {
-    this.router.navigate(['/profile']);
+  /** ✅ ยกเลิกการสมัครเรียน */
+  cancelRegistration(enrollmentId: number) {
+    if (!confirm('คุณต้องการยกเลิกการสมัครเรียนนี้หรือไม่?')) return;
+    this.cancellingId = enrollmentId;
+
+    this.authService.cancelRegistration(enrollmentId).subscribe({
+      next: () => {
+        this.successMessage = 'ยกเลิกการสมัครเรียบร้อยแล้ว';
+        this.registrationHistory = this.registrationHistory.map(r => {
+          if (r.enrollment_id === enrollmentId || r.id === enrollmentId) {
+            return { ...r, status: 'cancelled' };
+          }
+          return r;
+        });
+      },
+      error: (err) => {
+        console.error('cancelRegistration error:', err);
+        this.errorMessage = 'เกิดข้อผิดพลาดในการยกเลิกการสมัคร';
+      },
+      complete: () => {
+        this.cancellingId = null;
+      }
+    });
   }
 
-  formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString('th-TH');
+  // ✅ ลบการสมัคร (เฉพาะตัวที่เลือก)
+  deleteRegistration(enrollmentId: number) {
+    if (!confirm('คุณแน่ใจหรือไม่ที่จะลบการสมัครนี้?')) return;
+    this.deletingId = enrollmentId;
+
+    this.authService.deleteRegistration(enrollmentId).subscribe({
+      next: () => {
+        this.successMessage = 'ลบการสมัครเรียบร้อยแล้ว';
+        this.registrationHistory = this.registrationHistory.filter(
+          r => r.enrollment_id !== enrollmentId && r.id !== enrollmentId
+        );
+      },
+      error: (err) => {
+        console.error('deleteRegistration error:', err);
+        this.errorMessage = 'เกิดข้อผิดพลาดในการลบข้อมูล';
+      },
+      complete: () => {
+        this.deletingId = null;
+      }
+    });
+  }
+
+  /** ✅ Utility */
+  formatDate(date: Date | string): string {
+    return new Date(date).toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   }
 
   getStatusLabel(status: string): string {
-    const statusOption = this.statusOptions.find(s => s.value === status);
-    return statusOption ? statusOption.label : status;
+    const s = this.statusOptions.find(x => x.value === status);
+    return s ? s.label : status;
   }
 
   getStatusColor(status: string): string {
-    const statusOption = this.statusOptions.find(s => s.value === status);
-    return statusOption ? statusOption.color : '#6c757d';
+    const s = this.statusOptions.find(x => x.value === status);
+    return s ? s.color : '#6c757d';
   }
 
   getTotalRegistrations(): number {
@@ -190,21 +226,17 @@ loadRegistrationHistory(): void {
   getTotalSpent(): number {
     return this.registrationHistory
       .filter(r => r.status !== 'cancelled')
-      .reduce((total, reg) => total + reg.price, 0);
+      .reduce((total, reg) => total + (reg.price || 0), 0);
   }
 
   getRegistrationsByYear(): { [key: string]: RegistrationHistory[] } {
     const grouped: { [key: string]: RegistrationHistory[] } = {};
-    
-    this.registrationHistory.forEach(registration => {
-      const year = new Date(registration.registrationDate).getFullYear().toString();
-      
-      if (!grouped[year]) {
-        grouped[year] = [];
-      }
-      grouped[year].push(registration);
+    this.registrationHistory.forEach(reg => {
+      const dateValue: any = (reg as any).enrollment_date || reg.registrationDate;
+      const year = new Date(dateValue).getFullYear().toString();
+      grouped[year] = grouped[year] || [];
+      grouped[year].push(reg);
     });
-    
     return grouped;
   }
 
@@ -212,63 +244,12 @@ loadRegistrationHistory(): void {
     return Object.keys(this.getRegistrationsByYear()).sort((a, b) => +b - +a);
   }
 
-  cancelRegistration(registrationId: number): void {
-    if (!confirm('คุณแน่ใจหรือไม่ที่จะยกเลิกการสมัครเรียนนี้?')) {
-      return;
-    }
-
-    this.isCancelling = true;
-    this.successMessage = '';
-    this.errorMessage = '';
-
-    // Update status in localStorage
-    const localHistory = JSON.parse(localStorage.getItem('registrationHistory') || '[]');
-    const updatedLocalHistory = localHistory.map((reg: any) => {
-      if (reg.id === registrationId) {
-        return { ...reg, status: 'cancelled' };
-      }
-      return reg;
-    });
-    localStorage.setItem('registrationHistory', JSON.stringify(updatedLocalHistory));
-
-    // Simulate API call
-    setTimeout(() => {
-      // Update the current list
-      this.registrationHistory = this.registrationHistory.map(reg => {
-        if (reg.id === registrationId) {
-          return { ...reg, status: 'cancelled' as 'active' | 'completed' | 'cancelled' };
-        }
-        return reg;
-      });
-
-      this.isCancelling = false;
-      this.successMessage = 'ยกเลิกการสมัครเรียนเรียบร้อยแล้ว';
-      setTimeout(() => this.successMessage = '', 3000);
-    }, 1000);
+  goBack(): void {
+    this.router.navigate(['/profile']);
   }
 
-  deleteRegistration(registrationId: number): void {
-    if (!confirm('คุณแน่ใจหรือไม่ที่จะลบการสมัครเรียนนี้? การดำเนินการนี้ไม่สามารถย้อนกลับได้')) {
-      return;
-    }
-
-    this.isDeleting = true;
-    this.successMessage = '';
-    this.errorMessage = '';
-
-    // Remove from localStorage
-    const localHistory = JSON.parse(localStorage.getItem('registrationHistory') || '[]');
-    const updatedLocalHistory = localHistory.filter((reg: any) => reg.id !== registrationId);
-    localStorage.setItem('registrationHistory', JSON.stringify(updatedLocalHistory));
-
-    // Simulate API call
-    setTimeout(() => {
-      // Remove from current list
-      this.registrationHistory = this.registrationHistory.filter(reg => reg.id !== registrationId);
-
-      this.isDeleting = false;
-      this.successMessage = 'ลบการสมัครเรียนเรียบร้อยแล้ว';
-      setTimeout(() => this.successMessage = '', 3000);
-    }, 1000);
+  // Navigate to course listing page
+  goToCourses(): void {
+    this.router.navigate(['/course']);
   }
 }

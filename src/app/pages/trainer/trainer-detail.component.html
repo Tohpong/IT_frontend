@@ -1,15 +1,13 @@
 <div class="trainer-detail-container" *ngIf="trainer">
   <div class="back-button">
-    <button (click)="goBack()" class="btn-back">
-      ← กลับไปหน้า Trainers
-    </button>
+    <button (click)="goBack()" class="btn-back">← กลับไปหน้า Trainers</button>
   </div>
 
   <div class="trainer-profile">
     <div class="trainer-image">
       <img [src]="trainer.image" [alt]="trainer.name" onerror="this.src=''">
     </div>
-    
+
     <div class="trainer-info">
       <h1>{{ trainer.name }}</h1>
       <div class="specialty">{{ trainer.specialty }} Specialist</div>
@@ -18,21 +16,17 @@
           <span *ngFor="let star of getStarRating(trainer.rating)" 
                 [class]="star === '★' ? 'star-filled' : 'star-empty'">{{ star }}</span>
         </span>
-        <span class="rating-text">{{ trainer.rating }}/5 ({{ trainer.reviewCount }} รีวิว)</span>
+        <span class="rating-text">{{ trainer.rating }}/5</span>
       </div>
-      
+
       <div class="quick-info">
-        <div class="info-item">
-          <strong>ประสบการณ์:</strong> {{ trainer.experience }} ปี
-        </div>
-        <div class="info-item">
-          <strong>อายุ:</strong> {{ trainer.age }} ปี
-        </div>
+        <div class="info-item"><strong>ประสบการณ์:</strong> {{ trainer.experience }} ปี</div>
+        <div class="info-item"><strong>อายุ:</strong> {{ trainer.age }} ปี</div>
       </div>
-      
+
       <div class="action-buttons">
         <button (click)="bookSession()" class="btn-primary">จองเซสชั่น</button>
-        <button (click)="contactTrainer()" class="btn-secondary">ติดต่อ</button>
+        <!-- contact button removed per request -->
       </div>
     </div>
   </div>
@@ -44,48 +38,34 @@
     </div>
 
     <div class="section">
-      <h2>การรับรองและใบประกาศ</h2>
-      <ul class="certification-list">
-        <li *ngFor="let cert of trainer.certification" class="certification-item">
-          <span class="cert-icon">🏆</span>
-          {{ cert }}
-        </li>
-      </ul>
-    </div>
-
-    <div class="section">
-      <h2>ความสำเร็จ</h2>
-      <ul class="achievement-list">
-        <li *ngFor="let achievement of trainer.achievements" class="achievement-item">
-          <span class="achievement-icon">🌟</span>
-          {{ achievement }}
-        </li>
-      </ul>
-    </div>
-
-    <div class="section">
       <h2>ตารางการทำงาน</h2>
       <div class="schedule">
-        <div *ngFor="let schedule of trainer.schedule" class="schedule-item">
-          <span class="schedule-icon">📅</span>
-          {{ schedule }}
-        </div>
+        <span class="schedule-icon">📅</span>
+        {{ trainer.schedule }}
       </div>
     </div>
 
     <div class="section">
-      <h2>ข้อมูลติดต่อ</h2>
-      <div class="contact-info">
-        <div class="contact-item">
-          <span class="contact-icon">📧</span>
-          <strong>Email:</strong> {{ trainer.contactInfo.email }}
-        </div>
-        <div class="contact-item">
-          <span class="contact-icon">📞</span>
-          <strong>โทรศัพท์:</strong> {{ trainer.contactInfo.phone }}
-        </div>
+    <h2>ข้อมูลติดต่อ</h2>
+    <div class="contact-info">
+      <div class="contact-item">
+        <span class="contact-icon">📧</span>
+        <strong>อีเมล: </strong>
+        <a *ngIf="trainer.email !== 'ไม่ระบุ'" href="mailto:{{ trainer.email }}">
+          {{ trainer.email }}
+        </a>
+        <span *ngIf="trainer.email === 'ไม่ระบุ'"> ไม่ระบุ</span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-icon">📞</span>
+        <strong>โทรศัพท์: </strong>
+        <a *ngIf="trainer.phone !== 'ไม่ระบุ'" href="tel:{{ trainer.phone }}">
+          {{ trainer.phone }}
+        </a>
+        <span *ngIf="trainer.phone === 'ไม่ระบุ'"> ไม่ระบุ</span>
       </div>
     </div>
+ </div>
   </div>
 </div>
 
@@ -94,7 +74,7 @@
   <button (click)="goBack()" class="btn-primary">กลับไปหน้า Trainers</button>
 </div>
 
-<!-- Booking Modal -->
+<!-- ✅ Booking Modal -->
 <div class="booking-modal" *ngIf="showBookingModal">
   <div class="modal-overlay" (click)="closeBookingModal()"></div>
   <div class="modal-content">
@@ -117,7 +97,7 @@
           <h4>{{ trainer?.name }}</h4>
           <p>{{ trainer?.specialty }} Specialist</p>
           <div class="rating-mini">
-            ⭐ {{ trainer?.rating }}/5 ({{ trainer?.reviewCount }} รีวิว)
+            ⭐ {{ trainer?.rating }}/5
           </div>
         </div>
       </div>

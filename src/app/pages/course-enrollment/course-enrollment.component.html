@@ -138,10 +138,9 @@
 
       <!-- Payment Section -->
       <div class="form-section">
-        <h2 class="section-title">
-          <span class="section-icon">💳</span>
-          การชำระเงิน
-        </h2>
+
+        
+        
 
         <div class="payment-summary">
           <div class="payment-item total">
@@ -150,58 +149,59 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="paymentMethod">วิธีการชำระเงิน <span class="required">*</span></label>
-          <div class="radio-group-compact">
-            <label class="radio-option-compact">
-              <input type="radio" formControlName="paymentMethod" value="credit_card" />
-              <span class="radio-custom"></span>
-              <span class="radio-label">💳 บัตรเครดิต/เดบิต</span>
-            </label>
+       
 
-            <label class="radio-option-compact">
-              <input type="radio" formControlName="paymentMethod" value="promptpay" />
-              <span class="radio-custom"></span>
-              <span class="radio-label">📱 พร้อมเพย์</span>
-            </label>
 
-            <label class="radio-option-compact">
-              <input type="radio" formControlName="paymentMethod" value="bank_transfer" />
-              <span class="radio-custom"></span>
-              <span class="radio-label">🏦 โอนเงิน</span>
-            </label>
-          </div>
-          <div class="error-message" *ngIf="isFieldInvalid('paymentMethod')">
-            {{ getFieldError('paymentMethod') }}
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="checkbox-option">
-            <input type="checkbox" formControlName="agreeTerms" [class.error]="isFieldInvalid('agreeTerms')" />
-            <span class="checkbox-custom"></span>
-            <span class="checkbox-label">
-              ยอมรับเงื่อนไขการสมัครเรียนและนโยบายการคืนเงิน <span class="required">*</span>
-            </span>
-          </label>
-          <div class="error-message" *ngIf="isFieldInvalid('agreeTerms')">
-            {{ getFieldError('agreeTerms') }}
-          </div>
-        </div>
-      </div>
-
-      <!-- Buttons -->
-      <div class="form-actions">
-        <button type="button" (click)="goBack()" class="btn-secondary">ยกเลิก</button>
-
-        <button type="submit" class="btn-primary" [disabled]="enrollmentForm.invalid || isSubmitting">
-          <span *ngIf="!isSubmitting">สมัครเรียนตอนนี้</span>
-          <span *ngIf="isSubmitting" class="loading-text">
-            <div class="spinner"></div>
-            กำลังประมวลผล...
-          </span>
-        </button>
-      </div>
-    </form>
+    <!-- experience, goals, medicalConditions ... -->
   </div>
-</div>
+
+  <!-- Payment Section -->
+  <div class="form-section">
+    <h2 class="section-title"><span>💳</span> การชำระเงิน</h2>
+
+    <!-- QR preview -->
+    <div *ngIf="enrollmentForm.get('paymentMethod')?.value === 'promptpay'" class="promptpay-qr-section">
+      <h3>ชำระด้วยพร้อมเพย์</h3>
+      <p>สแกน QR เพื่อชำระยอด <strong>{{ course?.price | number }} บาท</strong></p>
+
+      <div class="qr-container" *ngIf="qrImageUrl; else generatedOrLoading">
+        <img [src]="qrImageUrl" alt="PromptPay QR" />
+        <div class="promptpay-note"></div>
+      </div>
+
+      <ng-template #generatedOrLoading>
+        <div class="qr-container" *ngIf="qrDataUrl; else qrLoading">
+          <img [src]="qrDataUrl" alt="PromptPay QR" />
+        </div>
+        <ng-template #qrLoading>
+          <div class="qr-loading">กำลังสร้าง QR...</div>
+        </ng-template>
+      </ng-template>
+
+      <div class="promptpay-note">
+        หากต้องการ คุณสามารถคัดลอกหมายเลขพร้อมเพย์: <code>{{ promptpayId }}</code>
+      </div>
+    </div>
+
+    <!-- Checkbox -->
+    <div class="form-group checkbox-group">
+      <label class="checkbox-label-inline">
+        <input type="checkbox" formControlName="agreeTerms" />
+        <span class="checkbox-custom"></span>
+        <span class="checkbox-text">ยอมรับเงื่อนไข</span>
+      </label>
+      <div class="error-message" *ngIf="isFieldInvalid('agreeTerms')">{{ getFieldError('agreeTerms') }}</div>
+    </div>
+
+  </div>
+
+  <!-- Buttons -->
+  <div class="form-actions">
+    <button type="button" (click)="goBack()">ยกเลิก</button>
+    <button type="submit" [disabled]="enrollmentForm.invalid || isSubmitting">
+      <span *ngIf="!isSubmitting">สมัครเรียนตอนนี้</span>
+      <span *ngIf="isSubmitting" class="loading-text"><div class="spinner"></div> กำลังประมวลผล...</span>
+    </button>
+  </div>
+
+</form>
